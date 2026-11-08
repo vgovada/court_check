@@ -246,7 +246,7 @@ section.block > .wrap, .hero-inner { position: relative; z-index: 2; }
 @keyframes drift { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(8vw,-6vh) scale(1.15); } 100% { transform: translate(-6vw,5vh) scale(.92); } }
 .mote { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #e9d9c4; opacity: 0; animation: mote linear infinite; }
 @keyframes mote { 0% { opacity: 0; transform: translate(0,0); } 15% { opacity: .35; } 85% { opacity: .25; } 100% { opacity: 0; transform: translate(var(--dx), -60vh); } }
-.court-mark { position: absolute; opacity: .08; animation: sway 26s ease-in-out infinite alternate; transform-origin: 50% 50%; }
+.court-mark { position: absolute; opacity: .08; animation: spinSlow 140s linear infinite; transform-origin: 50% 50%; }
 @keyframes sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
 @keyframes spinSlow { to { transform: rotate(360deg); } }
 .deco { position: absolute; z-index: 1; pointer-events: none; will-change: transform; }
@@ -359,6 +359,49 @@ section.block > .wrap, .hero-inner { position: relative; z-index: 2; }
 .notepad li.done .item { opacity: .7; }
 .pencil { position: absolute; right: max(-30px, calc(50% - 470px)); top: 120px; width: 46px; transform: rotate(18deg); filter: drop-shadow(4px 8px 6px rgba(0,0,0,.4)); }
 @media (max-width: 900px) { .pencil { display: none; } .notepad .paper { padding: 22px 22px 62px 76px; } }
+
+/* ---------------- WHY NOTE ---------------- */
+.why { font-size: 14.5px; line-height: 1.5; color: var(--cream); background: rgba(246,239,230,.06); border-left: 3px solid var(--high); border-radius: 0 10px 10px 0; padding: 10px 14px; margin: 4px 0 12px; }
+.why b { color: #ffb48a; }
+
+/* ---------------- ROSTER (credits) ---------------- */
+.roster { margin-top: 50px; display: grid; gap: 34px; }
+.roster .row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.roster .row:nth-child(2) { margin-top: -40px; }
+.roster .row:nth-child(3) { margin-top: -40px; }
+@media (max-width: 820px) { .roster .row { grid-template-columns: 1fr; } .roster .row.flip .card { order: -1; } .roster .row:nth-child(n) { margin-top: 0; } }
+.card { position: relative; max-width: 380px; width: 100%; justify-self: center; background: linear-gradient(170deg, #5a0c0c, #330303 70%);
+  border: 1px solid rgba(246,239,230,.14); border-radius: 26px; padding: 30px 28px 26px; box-shadow: 0 24px 50px rgba(0,0,0,.45); overflow: hidden; }
+.card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 120px; background: radial-gradient(120% 100% at 50% 0%, rgba(246,239,230,.12), transparent 70%); pointer-events: none; }
+.card .num { position: absolute; top: 14px; right: 20px; font-family: var(--display); font-weight: 900; font-size: 64px; line-height: 1; color: rgba(246,239,230,.06); }
+.headshot { width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 18px; display: grid; place-items: center; overflow: hidden; position: relative;
+  background: rgba(246,239,230,.06); border: 2px dashed rgba(246,239,230,.35); color: var(--cream-dim); font-family: var(--display); font-weight: 900; font-size: 44px; }
+.headshot.has-img { border: 4px solid var(--cream); }
+.headshot img, .shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.headshot img { object-position: 50% 22%; }
+.shot .frame[data-img="gallery3"] { aspect-ratio: 4 / 4.4; }
+.shot .frame[data-img="gallery3"] img { object-position: 50% 62%; }
+.headshot[data-img="vidhur"] img { object-position: 50% 18%; transform: scale(1.35); transform-origin: 50% 18%; }
+.headshot[data-img="joseph"] img { object-position: 56% 44%; transform: scale(1.9); transform-origin: 56% 44%; }
+.headshot[data-img="william"] img { object-position: 50% 42%; transform: scale(1.25); transform-origin: 50% 42%; }
+.card h3 { font-family: var(--display); font-variation-settings: "wdth" 75; font-weight: 900; text-transform: uppercase; font-size: 34px; letter-spacing: .02em; margin: 0; text-align: center; line-height: 1; }
+.card .major { text-align: center; color: var(--cream-dim); margin: 8px 0 18px; font-size: 15px; }
+.card .major b { color: var(--cream); font-weight: 600; }
+.card .label { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 8px; font-weight: 600; }
+.sports { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.sports span { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px 5px 6px; border-radius: 99px; background: rgba(246,239,230,.08); font-size: 14px; font-weight: 600; }
+.sports svg { width: 20px; height: 20px; }
+.card blockquote { margin: 0 0 22px; position: relative; padding: 16px 16px 16px 18px; background: rgba(0,0,0,.18); border-radius: 14px; font-size: 15.5px; line-height: 1.55; font-style: italic; }
+.card blockquote::before { content: "\201C"; position: absolute; top: -18px; left: 10px; font-family: Georgia, serif; font-size: 64px; line-height: 1; color: #ff8a70; font-style: normal; }
+.card .linkedin { display: flex; justify-content: center; align-items: center; gap: 8px; text-decoration: none; color: var(--maroon-deep); background: var(--cream); font-weight: 700; font-size: 14px; padding: 11px; border-radius: 12px; transition: transform .2s, background .2s; }
+.card .linkedin:hover { transform: translateY(-2px); background: #fff; }
+.shot { justify-self: center; width: min(360px, 100%); background: #f6efe6; padding: 12px 12px 44px; border-radius: 4px; box-shadow: 0 20px 40px rgba(0,0,0,.45); position: relative; transition: transform .4s; }
+.shot:hover { transform: rotate(0deg) scale(1.03) !important; }
+.shot .frame { aspect-ratio: 4 / 3; background: #d9cfc4; display: grid; place-items: center; overflow: hidden; color: #7a5a5a; font-size: 14px; text-align: center; }
+.shot .frame .ph { display: grid; gap: 8px; justify-items: center; }
+.shot .frame svg { width: 40px; height: 40px; opacity: .6; }
+.shot figcaption { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-family: "Caveat", "Noteworthy", cursive; font-size: 22px; color: #3a2a2a; }
+.shot::before { content: ""; position: absolute; top: -12px; left: 50%; width: 90px; height: 26px; margin-left: -45px; background: rgba(246,239,230,.55); transform: rotate(-3deg); box-shadow: 0 2px 4px rgba(0,0,0,.15); }
 
 /* ---------------- CREDITS ---------------- */
 .credits { background: var(--maroon-deep); }
@@ -621,6 +664,7 @@ footer { padding: 40px 20px 60px; text-align: center; color: var(--cream-dim); f
         <figcaption><div class="eyebrow">Measured at 4 PM</div><h3>Which court left the dirtiest cloth?</h3></figcaption>
         <div class="plot" id="barchart"></div>
         <p class="insight" id="barInsight"></p>
+        <p class="why"><b>Why pickleball?</b> Its courts stay busy with both pickleball and futsal, players wear everyday sneakers that track in dirt from outside instead of court shoes, and cleaning crews put basketball and volleyball courts first because those are in higher demand.</p>
         <p class="foot-note">The longer the bar, the more dust our cloth picked up from that court (discoloration index**).</p>
       </figure>
     </div>
@@ -732,10 +776,40 @@ footer { padding: 40px 20px 60px; text-align: center; color: var(--cream-dim); f
   <div class="wrap">
     <div class="eyebrow reveal">Credits</div>
     <h2 class="display reveal d1">Who wiped<br>the floors.</h2>
-    <div class="team">
-      <!-- TODO: replace with your team -->
-      <div class="person reveal"><div class="avatar">YN</div><h4>Your Name</h4><p>What you did on the project.</p></div>
-      <div class="person reveal d1"><div class="avatar">TN</div><h4>Teammate Name</h4><p>What they did on the project.</p></div>
+    <div class="roster">
+      <div class="row">
+        <article class="card reveal"><div class="num">01</div>
+          <div class="headshot" data-img="vidhur">VG</div>
+          <h3>Vidhur Govada</h3><p class="major"><b>Computer Science</b><br>Class of '28</p>
+          <div class="label">Favorite sports</div><div class="sports"><span><svg viewBox="0 0 100 100"><use href="#i-basketball"/></svg>Basketball</span><span><svg viewBox="0 0 100 100"><use href="#i-volleyball"/></svg>Volleyball</span><span><svg viewBox="0 0 50 50"><use href="#i-pickleball"/></svg>Pickleball</span><span><svg viewBox="0 0 100 100"><use href="#i-soccer"/></svg>Soccer</span></div>
+          <div class="label">Why did you pursue this idea?</div>
+          <blockquote>I've continuously injured myself from playing on dusty courts; I even dislocated my shoulder once. I want to give others an understanding of how dust on courts affects your ability to play so that people can be better prepared for possible injuries.</blockquote>
+          <a class="linkedin" href="https://www.linkedin.com/in/vidhurgovada/" target="_blank" rel="noopener">Connect on LinkedIn ↗</a>
+        </article>
+        <figure class="shot reveal" style="transform:rotate(3deg)"><div class="frame" data-img="gallery1"><div class="ph"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="10" width="32" height="24" rx="4"/><circle cx="20" cy="22" r="6"/><path d="M14 10 L16 6 H24 L26 10"/></svg>Photo coming soon</div></div><figcaption>The CourtCheck team</figcaption></figure>
+      </div>
+      <div class="row flip">
+        <figure class="shot reveal" style="transform:rotate(-3deg)"><div class="frame" data-img="gallery2"><div class="ph"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="10" width="32" height="24" rx="4"/><circle cx="20" cy="22" r="6"/><path d="M14 10 L16 6 H24 L26 10"/></svg>Photo coming soon</div></div><figcaption>The spring-scale pull test</figcaption></figure>
+        <article class="card reveal"><div class="num">02</div>
+          <div class="headshot" data-img="joseph">JG</div>
+          <h3>Joseph Gwak</h3><p class="major"><b>Mechanical Engineering</b><br>Class of '28</p>
+          <div class="label">Favorite sports</div><div class="sports"><span><svg viewBox="0 0 100 100"><use href="#i-basketball"/></svg>Basketball</span><span><svg viewBox="0 0 60 84"><use href="#i-shuttle"/></svg>Badminton</span></div>
+          <div class="label">Why did you pursue this idea?</div>
+          <blockquote>There's nothing more frustrating than slipping and losing your rhythm, especially as a point guard in basketball, so I want everyone to enjoy sports without worrying about what's under their feet.</blockquote>
+          <a class="linkedin" href="https://www.linkedin.com/in/joseph-gwak" target="_blank" rel="noopener">Connect on LinkedIn ↗</a>
+        </article>
+      </div>
+      <div class="row">
+        <article class="card reveal"><div class="num">03</div>
+          <div class="headshot" data-img="william">WL</div>
+          <h3>William Lee</h3><p class="major"><b>Applied Math / Actuarial Science</b><br>Class of '28</p>
+          <div class="label">Favorite sports</div><div class="sports"><span><svg viewBox="0 0 100 100"><use href="#i-volleyball"/></svg>Volleyball</span><span><svg viewBox="0 0 100 100"><use href="#i-basketball"/></svg>Basketball</span></div>
+          <div class="label">Why did you pursue this idea?</div>
+          <blockquote>It infuriates me not being able to give it my all when playing my sport. Slipping and sliding all the time inhibits my strength, so I want to give others a way to use data to determine what they can do to succeed.</blockquote>
+          <a class="linkedin" href="https://www.linkedin.com/in/william-lee" target="_blank" rel="noopener">Connect on LinkedIn ↗</a>
+        </article>
+        <figure class="shot reveal" style="transform:rotate(2.5deg)"><div class="frame" data-img="gallery3"><div class="ph"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="10" width="32" height="24" rx="4"/><circle cx="20" cy="22" r="6"/><path d="M14 10 L16 6 H24 L26 10"/></svg>Photo coming soon</div></div><figcaption>Wiping a court</figcaption></figure>
+      </div>
     </div>
   </div>
 </section>
@@ -1169,10 +1243,10 @@ const COURT_MARKS = [
 const GEAR = {
   // [icon, x%, y%, size, rotation, pace (0 = moves with the page, 1 = stays put), hide on phones]
   hero:     [["basketball", 6, 14, 110, -10, .3], ["racket", 4, 58, 70, -28, .75, 1], ["shuttle", 86, 12, 64, 25, .5], ["soccer", 88, 64, 84, 0, .88], ["pickleball", 20, 84, 42, 0, .6, 1]],
-  explore:  [["pickleball", 0.5, 30, 34, 0, .35, 1], ["paddle", 0.5, 62, 62, -20, .82, 1], ["volleyball", 98.5, 42, 84, 0, .5], ["soccer", 98.5, 82, 74, 0, .7, 1]],
-  findings: [["shuttle", 0.5, 34, 46, -20, .28], ["stopwatch", 0.5, 76, 76, -12, .78, 1], ["racket", 98.5, 30, 70, 30, .55], ["basketball", 98.5, 82, 86, 0, .72, 1]],
-  method:   [["soccer", 0.5, 30, 80, 0, .4], ["stopwatch", 0.5, 80, 70, -10, .86, 1], ["shuttle", 98.5, 50, 52, 15, .62, 1]],
-  credits:  [["basketball", 0.5, 22, 94, 12, .45], ["soccer", 0.5, 70, 60, 0, .66, 1], ["volleyball", 98.5, 20, 80, 0, .7], ["racket", 98.5, 62, 64, 22, .86, 1]],
+  explore:  [["pickleball", 0.5, 30, 34, 0, .35, 1], ["paddle", 0.5, 62, 62, -20, .82, 1], ["volleyball", 97, 42, 84, 0, .5], ["soccer", 97, 82, 74, 0, .7, 1]],
+  findings: [["shuttle", 0.5, 34, 46, -20, .28], ["stopwatch", 0.5, 76, 76, -12, .78, 1], ["racket", 97, 30, 70, 30, .55], ["basketball", 97, 82, 86, 0, .72, 1]],
+  method:   [["soccer", 0.5, 30, 80, 0, .4], ["stopwatch", 0.5, 80, 70, -10, .86, 1], ["shuttle", 97, 50, 52, 15, .62, 1]],
+  credits:  [["basketball", 0.5, 18, 94, 12, .45], ["soccer", 0.5, 64, 60, 0, .66, 1], ["volleyball", 97, 30, 80, 0, .7], ["racket", 97, 74, 64, 22, .86, 1]],
 };
 const BLOBS = [["#8f1717", 46], ["#6a0d0d", 38], ["#a3341f", 26]];
 const decos = [];
@@ -1198,11 +1272,15 @@ Object.entries(GEAR).forEach(([id, items], si) => {
   });
 });
 function fitCourtMarks() {
-  document.querySelectorAll(".court-mark").forEach(m => {
-    const secH = m.closest("section, header").offsetHeight;
-    const w = Math.min(innerWidth * .44, 480, secH * .78);
+  // a spinning square needs room for its corners: drawings reach 0.6 x width from the centre
+  document.querySelectorAll(".court-mark").forEach((m, k) => {
+    const sec = m.closest("section, header"), secH = sec.offsetHeight, secW = sec.offsetWidth;
+    const w = Math.min(secW * .4, 460, secH * .78 / 1.2);
+    const pad = w * .1 + 14;
     m.style.width = w + "px";
-    m.style.top = ((secH - w) * .45) + "px";
+    m.style.top = Math.max(pad, (secH - w) * .45) + "px";
+    m.style.left = m.style.right = "auto";
+    m.style[k % 2 ? "right" : "left"] = pad + "px";
   });
 }
 fitCourtMarks();
@@ -1220,6 +1298,15 @@ function parallax() {
 }
 addEventListener("scroll", parallax, { passive: true });
 parallax();
+
+/* ---------- team photos & gallery ---------- */
+const IMAGES = __IMAGES__;
+document.querySelectorAll("[data-img]").forEach(el => {
+  const img = IMAGES[el.dataset.img];
+  if (!img) return;
+  el.innerHTML = `<img src="${img.src}" alt="${img.alt}" loading="lazy">`;
+  el.classList.add("has-img");
+});
 
 /* ---------- go ---------- */
 update();

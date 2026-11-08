@@ -62,6 +62,33 @@ def load_photos():
     return photos
 
 
+# Put photos in app/images/ with these names (jpg or png). Missing ones show a placeholder.
+TEAM_IMAGES = {
+    "joseph": "Joseph Gwak", "william": "William Lee", "vidhur": "Vidhur Govada",
+    "gallery1": "The CourtCheck team at TAMU Datathon", "gallery2": "Spring-scale pull test with a weighted shoe", "gallery3": "Wiping a court with a white cloth",
+}
+
+
+@st.cache_data
+def load_team_images():
+    out = {}
+    for key, alt in TEAM_IMAGES.items():
+        for ext in ("jpg", "jpeg", "png"):
+            path = Path(__file__).parent / "images" / f"{key}.{ext}"
+            if not path.exists():
+                continue
+            img = cv2.imread(str(path))
+            if img is None:
+                break
+            scale = min(1.0, 900 / max(img.shape[:2]))
+            img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+            ok, buf = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 82])
+            if ok:
+                out[key] = {"src": "data:image/jpeg;base64," + base64.b64encode(buf).decode(), "alt": alt}
+            break
+    return out
+
+
 def font_b64(name):
     """Bundle the handwriting font into the page so it always shows."""
     return base64.b64encode((Path(__file__).parent / "fonts" / name).read_bytes()).decode()
@@ -73,6 +100,7 @@ measured = [t["dustiness"] for c in data["courts"] for t in c["times"].values() 
 html = (Path(__file__).parent / "site.html").read_text()
 for key, value in {
     "__DATA__": json.dumps(data),
+    "__IMAGES__": json.dumps(load_team_images()),
     "__PHOTOS__": json.dumps(load_photos()),
     "__SAMPLES__": str(sum(c["samples"] for c in data["courts"])),
     "__GROUPS__": str(len(data["courts"])),
