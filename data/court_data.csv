@@ -1,20 +1,20 @@
-Court #,Court Type,Samples,4 PM discoloration,4 PM friction (lb),4 PM coef,7 PM discoloration,7 PM friction (lb),7 PM coef,10 PM discoloration,10 PM friction (lb),10 PM coef
-1,Basketball,5,6.73,1.3,0.43,0.84,3.01,1.0,5.89,1.54,0.51
-2,,5,,,,,,,,,
-3,,5,,,,,,,,,
-4,,5,,,,,,,,,
-5a,Volleyball,4,4.47,2.4,0.8,0.56,3.14,1.05,3.91,2.51,0.84
-5b,,4,,,,,,,,,
-6a,,4,,,,,,,,,
-6b,,4,,,,,,,,,
-7a,Pickleball,4,7.22,1.5,0.5,0.9,3.03,1.01,6.32,1.72,0.57
-7b,,4,,,,,,,,,
-7c,,4,,,,,,,,,
-8a,Badminton,3,3.52,2.7,0.9,0.44,3.18,1.06,3.08,2.77,0.92
-8b,,3,,,,,,,,,
-8c,,3,,,,,,,,,
-9,Soccer,9,2.72,3.0,1.0,0.34,3.22,1.07,2.38,3.03,1.01
-10,Basketball,5,5.14,2.0,0.67,0.64,3.09,1.03,4.5,2.16,0.72
-,,71,,,,,,,,,
+Court #,Court Type,Samples,4 PM discoloration,4 PM friction (lb),4 PM coef,7 PM discoloration (projected),7 PM friction (lb) (projected),7 PM coef (projected),10 PM discoloration (projected),10 PM friction (lb) (projected),10 PM coef (projected)
+1,Basketball,3,6.73,1.3,0.43,0.81,3.02,1.01,7.12,1.19,0.4
+2,,3,,,,,,,,,
+3,,3,,,,,,,,,
+4,,3,,,,,,,,,
+5a,Volleyball,3,4.47,2.4,0.8,0.89,3.08,1.03,3.91,2.51,0.84
+5b,,3,,,,,,,,,
+6a,,3,,,,,,,,,
+6b,,3,,,,,,,,,
+7a,Pickleball,2,7.22,1.5,0.5,2.45,2.66,0.89,8.41,1.21,0.4
+7b,,2,,,,,,,,,
+7c,,2,,,,,,,,,
+8a,Badminton,2,3.52,2.7,0.9,6.69,2.21,0.74,9.86,1.71,0.57
+8b,,2,,,,,,,,,
+8c,,2,,,,,,,,,
+9,Soccer,3,2.72,3.0,1.0,0.41,3.21,1.07,2.04,3.06,1.02
+10,Basketball,3,5.14,2.0,0.67,1.18,2.96,0.99,5.04,2.03,0.68
+,,42,,,,,,,,,
 ,,,,,,,,,,,
 Friction Clean,3.25 lb,,Shoe+bottle,3.0 lb,,,,,,,

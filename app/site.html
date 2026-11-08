@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CourtCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@font-face { font-family: "Caveat"; font-weight: 500; font-display: block; src: url(data:font/woff2;base64,__CAVEAT_500__) format("woff2"); }
+@font-face { font-family: "Caveat"; font-weight: 700; font-display: block; src: url(data:font/woff2;base64,__CAVEAT_700__) format("woff2"); }
+:root {
+  --maroon: #500000;
+  --maroon-deep: #2b0000;
+  --maroon-mid: #3d0505;
+  --maroon-lift: #6a1010;
+  --cream: #f6efe6;
+  --cream-dim: #cdb9ad;
+  --wood: #d8a46a;
+  --wood-dark: #b98550;
+  --dust: #8f8577;
+  --low: #6fcf8a;
+  --mid: #f0c64b;
+  --high: #ef8a3c;
+  --severe: #ff5a46;
+  --display: "Archivo", "Arial Narrow", Impact, sans-serif;
+  --body: "Inter", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--maroon-deep);
+  color: var(--cream);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+/* film grain */
+body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 100; opacity: .07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.display {
+  font-family: var(--display);
+  font-variation-settings: "wdth" 70;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  line-height: .92;
+}
+.eyebrow {
+  font-family: var(--display); font-variation-settings: "wdth" 100; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .22em; font-size: 13px; color: var(--cream-dim);
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+
+/* scroll progress */
+#progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: var(--cream); z-index: 50; }
+
+/* nav */
+nav.top {
+  position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 40;
+  display: flex; gap: 4px; padding: 6px; border-radius: 99px;
+  background: rgba(43,0,0,.72); backdrop-filter: blur(10px); border: 1px solid rgba(246,239,230,.12);
+  opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+nav.top.show { opacity: 1; pointer-events: auto; }
+nav.top a {
+  white-space: nowrap;
+  color: var(--cream-dim); text-decoration: none; font-size: 14px; font-weight: 600;
+  padding: 7px 14px; border-radius: 99px; transition: background .2s, color .2s;
+}
+nav.top a:hover, nav.top a.active { background: var(--cream); color: var(--maroon-deep); }
+
+/* reveal on scroll */
+.reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1); }
+.reveal.in { opacity: 1; transform: none; }
+.reveal.d1 { transition-delay: .12s; } .reveal.d2 { transition-delay: .24s; } .reveal.d3 { transition-delay: .36s; }
+
+/* ---------------- HERO ---------------- */
+.hero {
+  min-height: 100vh; position: relative; overflow: hidden;
+  display: grid; place-items: center; text-align: center;
+  background: radial-gradient(1200px 700px at var(--mx, 50%) var(--my, 40%), #7a0f0f 0%, var(--maroon) 35%, var(--maroon-deep) 80%);
+}
+.hero-lines { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .14; }
+.hero-inner { position: relative; padding: 0 20px; }
+.hero h1 { font-size: clamp(64px, 14vw, 190px); margin: 14px 0 6px; }
+.hero h1 span { display: inline-block; opacity: 0; transform: translateY(60px) rotate(4deg); animation: drop .9s cubic-bezier(.2,.8,.2,1) forwards; }
+@keyframes drop { to { opacity: 1; transform: none; } }
+.hero p.lead { font-size: clamp(18px, 2.3vw, 24px); max-width: 640px; margin: 0 auto; color: var(--cream-dim); }
+.hero p.lead b { color: var(--cream); }
+.scroll-cue {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--cream-dim); font-size: 13px;
+  letter-spacing: .18em; text-transform: uppercase;
+}
+.scroll-cue .pill { width: 26px; height: 42px; border: 2px solid var(--cream-dim); border-radius: 99px; position: relative; }
+.scroll-cue .pill::after { content: ""; position: absolute; left: 50%; top: 8px; width: 4px; height: 8px; margin-left: -2px; border-radius: 4px; background: var(--cream); animation: cue 1.6s infinite; }
+@keyframes cue { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(14px); } }
+
+/* ---------------- SCROLL SCENE ---------------- */
+.scene { height: 420vh; position: relative; background: var(--maroon-deep); }
+.scene-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; display: grid; grid-template-rows: 1fr auto; }
+.scene svg.stage { width: 100%; height: 100%; display: block; }
+.captions { position: absolute; left: 0; right: 0; top: 12vh; text-align: center; pointer-events: none; }
+.caption { position: absolute; left: 50%; width: min(860px, 92vw); transform: translateX(-50%); opacity: 0; }
+.caption .display { font-size: clamp(36px, 6.2vw, 78px); }
+.caption p { color: var(--cream-dim); font-size: clamp(16px, 1.9vw, 20px); margin: 12px auto 0; max-width: 560px; }
+.meter {
+  position: absolute; right: clamp(14px, 4vw, 56px); top: 50%; transform: translateY(-50%);
+  width: 64px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.meter .track { width: 16px; height: 34vh; border-radius: 99px; background: rgba(246,239,230,.12); position: relative; overflow: hidden; }
+.meter .fill { position: absolute; bottom: 0; left: 0; right: 0; border-radius: 99px; background: var(--low); transition: background .3s; }
+.meter .val { font-family: var(--display); font-weight: 900; font-variation-settings: "wdth" 75; font-size: 30px; }
+.meter .lbl { font-size: 11px; letter-spacing: .2em; color: var(--cream-dim); }
+.flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 70%, rgba(255,90,70,.35), transparent 60%); opacity: 0; pointer-events: none; }
+
+/* ---------------- STATS ---------------- */
+section.block { padding: clamp(90px, 14vh, 150px) 0; position: relative; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 44px; }
+@media (max-width: 820px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+.stat { border-top: 2px solid rgba(246,239,230,.2); padding-top: 16px; }
+.stat .num { font-size: clamp(56px, 8vw, 96px); }
+.stat .what { color: var(--cream-dim); font-size: 15px; max-width: 220px; }
+h2.display { font-size: clamp(44px, 7vw, 92px); margin: 10px 0 0; }
+.sub-lead { color: var(--cream-dim); font-size: 19px; max-width: 620px; margin-top: 16px; }
+
+/* steps */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 44px; }
+@media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
+.step { background: var(--maroon-mid); border-radius: 18px; padding: 26px; position: relative; overflow: hidden; }
+.step .n { font-family: var(--display); font-weight: 900; font-size: 84px; line-height: 1; color: rgba(246,239,230,.08); position: absolute; right: 16px; top: 4px; }
+.step svg { width: 54px; height: 54px; margin-bottom: 14px; }
+.step h3 { font-family: var(--display); font-variation-settings: "wdth" 80; font-weight: 800; text-transform: uppercase; font-size: 24px; margin: 0 0 6px; letter-spacing: .02em; }
+.step p { margin: 0; color: var(--cream-dim); font-size: 15.5px; }
+
+/* ---------------- EXPLORER ---------------- */
+.explorer { background: var(--maroon); }
+.controls { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: flex-end; justify-content: space-between; margin: 36px 0 18px; }
+.ctl-label { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--cream-dim); margin-bottom: 8px; }
+.seg { display: inline-flex; background: var(--maroon-deep); border-radius: 99px; padding: 5px; position: relative; }
+.seg button {
+  position: relative; z-index: 1; border: 0; background: none; color: var(--cream-dim);
+  font: 600 15px var(--body); padding: 10px 18px; border-radius: 99px; cursor: pointer; transition: color .25s;
+}
+.seg button.on { color: var(--maroon-deep); }
+.seg .thumb { position: absolute; top: 5px; bottom: 5px; border-radius: 99px; background: var(--cream); transition: left .35s cubic-bezier(.3,.8,.2,1), width .35s cubic-bezier(.3,.8,.2,1); }
+.seg button .mop { font-size: 11px; display: block; font-weight: 500; opacity: .8; margin-top: -2px; }
+
+.verdict {
+  background: var(--maroon-deep); border-radius: 18px; padding: 20px 24px; margin-bottom: 26px;
+  display: flex; gap: 18px; align-items: center; min-height: 92px;
+}
+.verdict .big { font-family: var(--display); font-variation-settings: "wdth" 72; font-weight: 900; font-size: 22px; text-transform: uppercase; letter-spacing: .03em; color: var(--cream-dim); white-space: nowrap; }
+.verdict .text { font-size: 18px; }
+.verdict .text b { color: #fff; }
+.verdict.swap .text { animation: swap .4s ease; }
+@keyframes swap { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.courts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; perspective: 900px; }
+@media (max-width: 860px) { .courts { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .courts { grid-template-columns: 1fr; } }
+.court {
+  background: var(--maroon-deep); border-radius: 18px; padding: 16px 16px 18px; cursor: pointer; position: relative;
+  border: 2px solid transparent; transform-style: preserve-3d;
+  transition: transform .25s ease, border-color .25s, box-shadow .25s;
+}
+.court:hover, .court:focus-visible { border-color: var(--cream); box-shadow: 0 18px 40px rgba(0,0,0,.45), 0 0 30px rgba(255,220,190,.18); outline: none; }
+.court .head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+.court h3 { font-family: var(--display); font-variation-settings: "wdth" 78; font-weight: 900; text-transform: uppercase; font-size: 23px; margin: 0; letter-spacing: .02em; }
+.court .ids { color: var(--cream-dim); font-size: 13px; white-space: nowrap; }
+.court svg { width: 100%; display: block; border-radius: 10px; }
+.court .dust-dot { transition: opacity .6s ease; }
+.court .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 14px; }
+.court .pct { font-family: var(--display); font-weight: 900; font-variation-settings: "wdth" 75; font-size: 30px; line-height: 1; }
+.chip { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; padding: 5px 11px; border-radius: 99px; background: rgba(246,239,230,.08); }
+.chip i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.badge-crown { position: absolute; top: -12px; right: 14px; background: var(--cream); color: var(--maroon-deep); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px; opacity: 0; transform: translateY(6px); transition: .3s; }
+.court.best .badge-crown { opacity: 1; transform: none; }
+.court.dim { opacity: .45; }
+
+/* drawer */
+.backdrop { position: fixed; inset: 0; background: rgba(15,0,0,.6); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 60; }
+.backdrop.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; left: 50%; bottom: 0; width: min(760px, 100%); max-height: 92vh; overflow-y: auto;
+  transform: translate(-50%, 105%); transition: transform .45s cubic-bezier(.2,.85,.2,1);
+  background: var(--maroon-mid); border-radius: 26px 26px 0 0; padding: 28px clamp(18px, 4vw, 36px) 36px; z-index: 61;
+  visibility: hidden; transition: transform .45s cubic-bezier(.2,.85,.2,1), visibility 0s .45s;
+}
+.drawer.open { transform: translate(-50%, 0); visibility: visible; transition: transform .45s cubic-bezier(.2,.85,.2,1); box-shadow: 0 -20px 60px rgba(0,0,0,.5); }
+.drawer .grab { width: 44px; height: 5px; border-radius: 99px; background: rgba(246,239,230,.3); margin: -12px auto 18px; }
+.drawer .close { position: absolute; top: 16px; right: 18px; background: rgba(246,239,230,.1); border: 0; color: var(--cream); width: 36px; height: 36px; border-radius: 50%; font-size: 20px; cursor: pointer; }
+.drawer h2 { font-size: clamp(40px, 7vw, 64px); margin: 4px 0 2px; }
+.drawer .meta { color: var(--cream-dim); }
+.tag { display: inline-block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; border: 1px solid var(--cream-dim); color: var(--cream-dim); border-radius: 99px; padding: 2px 9px; margin-left: 8px; vertical-align: 2px; }
+.ring-row { display: grid; grid-template-columns: 170px 1fr; gap: 26px; align-items: center; margin: 22px 0; }
+@media (max-width: 560px) { .ring-row { grid-template-columns: 1fr; justify-items: center; text-align: center; } }
+.ring { position: relative; width: 170px; height: 170px; }
+.ring svg { transform: rotate(-90deg); }
+.ring .c { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+.ring .c b { font-family: var(--display); font-weight: 900; font-variation-settings: "wdth" 72; font-size: 52px; line-height: 1; display: block; }
+.ring .c small { color: var(--cream-dim); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+.ring circle.arc { transition: stroke-dashoffset .8s cubic-bezier(.3,.8,.2,1), stroke .4s; }
+.risk { font-family: var(--display); font-weight: 900; font-variation-settings: "wdth" 75; text-transform: uppercase; font-size: 32px; line-height: 1; }
+.timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 8px 0 24px; }
+.tl { background: var(--maroon-deep); border-radius: 12px; padding: 12px; cursor: pointer; border: 2px solid transparent; transition: border-color .2s; text-align: left; color: inherit; font: inherit; }
+.tl.on { border-color: var(--cream); }
+.tl .t { font-size: 13px; color: var(--cream-dim); }
+.tl .bar { height: 6px; border-radius: 99px; background: rgba(246,239,230,.1); margin: 8px 0 6px; overflow: hidden; }
+.tl .bar span { display: block; height: 100%; border-radius: 99px; transition: width .6s ease; }
+.tl .v { font-weight: 600; }
+.tips { display: grid; gap: 12px; }
+.tip { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; background: rgba(246,239,230,.05); border-radius: 12px; padding: 12px 14px; }
+.tip .ic { font-size: 22px; line-height: 1.2; }
+.tip b { display: block; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--cream-dim); }
+
+/* ---------------- METHOD ---------------- */
+.method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; margin-top: 40px; }
+@media (max-width: 860px) { .method-grid { grid-template-columns: 1fr; } }
+.method-step { display: grid; grid-template-columns: 44px 1fr; gap: 14px; margin-bottom: 26px; }
+.method-step .n { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--cream); display: grid; place-items: center; font-family: var(--display); font-weight: 900; font-size: 20px; }
+.method-step h4 { margin: 0 0 4px; font-size: 18px; }
+.method-step p { margin: 0; color: var(--cream-dim); font-size: 15.5px; }
+.cloths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cloths figure { margin: 0; }
+.cloths img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; display: block; transition: transform .3s; }
+.cloths img:hover { transform: scale(1.05) rotate(-1deg); }
+.cloths figcaption { font-size: 12px; color: var(--cream-dim); margin-top: 5px; text-align: center; }
+details { margin-top: 30px; background: var(--maroon-mid); border-radius: 14px; padding: 4px 18px; }
+details summary { cursor: pointer; padding: 14px 0; font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 14px; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid rgba(246,239,230,.1); }
+th { color: var(--cream-dim); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+.fine { color: var(--cream-dim); font-size: 14px; }
+
+/* ---------------- BACKGROUND FX + GEAR ---------------- */
+section.block, .hero { overflow: hidden; isolation: isolate; }
+section.block > .wrap, .hero-inner { position: relative; z-index: 2; }
+.bg-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; animation: drift 22s ease-in-out infinite alternate; }
+@keyframes drift { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(8vw,-6vh) scale(1.15); } 100% { transform: translate(-6vw,5vh) scale(.92); } }
+.mote { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #e9d9c4; opacity: 0; animation: mote linear infinite; }
+@keyframes mote { 0% { opacity: 0; transform: translate(0,0); } 15% { opacity: .35; } 85% { opacity: .25; } 100% { opacity: 0; transform: translate(var(--dx), -60vh); } }
+.court-mark { position: absolute; opacity: .08; animation: sway 26s ease-in-out infinite alternate; transform-origin: 50% 50%; }
+@keyframes sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+@keyframes spinSlow { to { transform: rotate(360deg); } }
+.deco { position: absolute; z-index: 1; pointer-events: none; will-change: transform; }
+.deco .float { animation: bobRot var(--dur, 7s) ease-in-out infinite alternate; display: block; }
+.deco svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 14px 18px rgba(0,0,0,.45)); }
+@keyframes bobRot { from { transform: translateY(-10px) rotate(calc(var(--rot, 0deg) - 6deg)); } to { transform: translateY(12px) rotate(calc(var(--rot, 0deg) + 6deg)); } }
+@media (max-width: 900px) { .deco.sm-hide { display: none; } .deco { opacity: .85; } }
+
+/* ---------------- CHARTS ---------------- */
+.charts { display: grid; grid-template-columns: 1.25fr 1fr; gap: 24px; margin-top: 70px; }
+@media (max-width: 900px) { .charts { grid-template-columns: 1fr; } }
+.chart { margin: 0; background: var(--maroon-mid); border-radius: 20px; padding: 24px; }
+.chart h3 { font-family: var(--display); font-variation-settings: "wdth" 78; font-weight: 900; text-transform: uppercase; font-size: 28px; margin: 4px 0 14px; letter-spacing: .02em; }
+.plot svg { width: 100%; height: auto; display: block; overflow: visible; }
+.plot .axis text { fill: var(--cream-dim); font-size: 11px; font-family: var(--body); }
+.plot .axis line, .plot .grid line { stroke: rgba(246,239,230,.12); }
+.plot .axis-title { fill: var(--cream-dim); font-size: 12px; font-family: var(--body); letter-spacing: .06em; }
+.plot .pt { transition: transform .5s cubic-bezier(.3,1.4,.4,1), opacity .4s; transform-box: fill-box; transform-origin: center; cursor: pointer; }
+.chart:not(.in) .plot .pt { transform: scale(0); opacity: 0; }
+.plot .trend { stroke-dasharray: 600; stroke-dashoffset: 600; transition: stroke-dashoffset 1.4s ease .5s; }
+.chart.in .plot .trend { stroke-dashoffset: 0; }
+.plot .bar { transition: width 1s cubic-bezier(.3,.8,.2,1); }
+.plot .bar-label { fill: var(--cream); font-size: 13px; font-family: var(--body); font-weight: 600; }
+.plot .bar-val { fill: var(--cream); font-size: 13px; font-family: var(--display); font-weight: 900; }
+.plot-tip { position: fixed; pointer-events: none; background: var(--cream); color: var(--maroon-deep); font-size: 13px; padding: 6px 10px; border-radius: 8px; opacity: 0; transition: opacity .15s; z-index: 70; white-space: nowrap; }
+.legend { display: flex; gap: 18px; font-size: 13px; color: var(--cream-dim); margin-top: 8px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.lg-solid { background: var(--cream); }
+.lg-hollow { border: 2px solid var(--cream); }
+.insight { font-size: 16.5px; margin: 16px 0 10px; }
+.insight b { color: #fff; }
+.foot-note { font-size: 13px; color: var(--cream-dim); margin: 6px 0 0; }
+
+/* ---------------- FLOATING MENU (basketball) ---------------- */
+.fab { position: fixed; right: 26px; bottom: 22px; width: 74px; height: 96px; border: 0; padding: 0; background: none; z-index: 45; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transition: opacity .3s, transform .3s; }
+.fab .fab-label { font-family: var(--display); font-variation-settings: "wdth" 100; font-weight: 900; letter-spacing: .2em; font-size: 13px; color: var(--cream);
+  margin-bottom: 6px; padding: 2px 8px; border-radius: 99px; background: rgba(43,0,0,.6); }
+.fab .ball { width: 70px; height: 70px; display: block; filter: drop-shadow(0 10px 14px rgba(0,0,0,.5)); animation: dribble 1.6s cubic-bezier(.5,0,.5,1) infinite; transition: transform .5s; }
+@keyframes dribble { 0%,100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+.fab:hover .ball { transform: rotate(90deg) scale(1.06); animation-play-state: paused; }
+.fab.open .ball { transform: rotate(200deg) scale(1.06); animation: none; }
+.fab::after { content: ""; position: absolute; bottom: -4px; left: 50%; width: 44px; height: 8px; margin-left: -22px; border-radius: 50%; background: rgba(0,0,0,.35); filter: blur(3px); animation: shadowPulse 1.6s cubic-bezier(.5,0,.5,1) infinite; }
+@keyframes shadowPulse { 0%,100% { transform: scaleX(1); opacity: .5; } 50% { transform: scaleX(.75); opacity: .3; } }
+.fab.gone { opacity: 0; transform: scale(.6) translateY(20px); pointer-events: none; }
+.fab-menu { position: fixed; right: 26px; bottom: 128px; z-index: 45; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
+.fab-menu a { background: var(--maroon-deep); color: var(--cream); text-decoration: none; padding: 10px 18px 10px 14px; border-radius: 16px; display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 10px; width: 250px;
+  border: 1px solid rgba(246,239,230,.18); opacity: 0; transform: translateX(24px) scale(.95); transition: opacity .25s, transform .35s cubic-bezier(.3,1.3,.5,1), background .2s; box-shadow: 0 8px 20px rgba(0,0,0,.35); }
+.fab-menu a .ic { font-size: 22px; text-align: center; }
+.fab-menu a small { display: block; font-family: var(--display); font-weight: 800; letter-spacing: .18em; text-transform: uppercase; font-size: 10.5px; color: #ff9a7a; }
+.fab-menu a b { display: block; font-size: 15.5px; }
+.fab-menu a:hover { background: var(--cream); color: var(--maroon-deep); }
+.fab-menu a:hover small { color: var(--maroon); }
+.fab-menu.open { pointer-events: auto; }
+.fab-menu.open a { opacity: 1; transform: none; }
+.fab-menu.open a:nth-child(1) { transition-delay: .12s; } .fab-menu.open a:nth-child(2) { transition-delay: .08s; } .fab-menu.open a:nth-child(3) { transition-delay: .04s; }
+
+/* ---------------- KEEP SCROLLING ---------------- */
+.keep { position: absolute; left: clamp(14px, 4vw, 60px); top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: flex-start; pointer-events: none; transition: opacity .3s; }
+.keep span { font-family: var(--display); font-variation-settings: "wdth" 80; font-weight: 900; font-size: clamp(16px, 2vw, 22px); line-height: 1.05; color: var(--cream); opacity: .55; display: block; animation: bob 2.4s ease-in-out infinite; }
+.keep span.gap { height: 12px; }
+.keep .arrow { margin-top: 10px; font-size: 22px; opacity: .8; animation: arrow 1.4s ease-in-out infinite; font-family: var(--body); }
+@keyframes bob { 0%,100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+@keyframes arrow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+@media (max-width: 560px) { .keep { left: 8px; } .keep span { font-size: 14px; } }
+
+/* ---------------- GROCERY LIST NOTEPAD ---------------- */
+.pad-wrap { margin-top: 64px; display: grid; justify-items: center; position: relative; }
+.pad-wrap > .eyebrow { margin-bottom: 18px; }
+.pad-stage { perspective: 1500px; width: min(720px, 100%); position: relative; padding: 20px 0 60px; }
+.pad-shadow { position: absolute; left: 2%; right: 8%; bottom: 24px; height: 60px; background: rgba(0,0,0,.55); filter: blur(26px); border-radius: 50%; transform: rotate(5deg); }
+.notepad { position: relative; transform-style: preserve-3d; transform: rotateX(16deg) rotateZ(5deg); transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.pad-stage:hover .notepad { transform: rotateX(9deg) rotateZ(3deg) translateY(-6px); }
+.notepad .sheet { position: absolute; left: 0; right: 0; top: 44px; bottom: 0; border-radius: 0 0 6px 6px; background: var(--c);
+  transform-origin: 100% 0; box-shadow: inset 0 0 0 1px rgba(110,80,10,.18), -2px 3px 6px rgba(0,0,0,.25); }
+.notepad .sheet.s1 { --c: #ecdb74; transform: translateZ(-2px) rotate(1.3deg); }
+.notepad .sheet.s2 { --c: #dcc964; transform: translateZ(-4px) rotate(2.5deg); }
+.notepad .binding, .notepad .paper, .notepad .fold { transform: translateZ(1px); }
+.notepad .binding { position: relative; z-index: 1; }
+.notepad .paper { box-shadow: -3px 0 6px rgba(0,0,0,.25); }
+.doodle { position: absolute; right: 90px; bottom: 22px; width: 104px; opacity: .8; transform: rotate(-8deg); }
+.paperclip { position: absolute; left: max(-20px, calc(50% - 540px)); top: 260px; width: 52px; transform: rotate(-32deg); filter: drop-shadow(4px 8px 5px rgba(0,0,0,.45)); }
+@media (max-width: 900px) { .paperclip { display: none; } }
+@media (max-width: 640px) { .doodle { display: none; } }
+.notepad .binding { height: 44px; background: linear-gradient(#a31d1d, #7d1010); border-radius: 6px 6px 0 0; position: relative; }
+.notepad .binding::after { content: ""; position: absolute; left: 24px; right: 24px; bottom: 9px; height: 8px;
+  background: radial-gradient(circle, #3a0505 3px, transparent 3.5px) 0 0 / 22px 8px repeat-x; opacity: .7; }
+.notepad .paper {
+  --line: 38px;
+  position: relative; background-color: #fdf08a;
+  background-image: linear-gradient(90deg, transparent 62px, #e2575b 62px, #e2575b 64px, transparent 64px),
+                    repeating-linear-gradient(#fdf08a 0 calc(var(--line) - 1px), #9cc4e4 calc(var(--line) - 1px) var(--line));
+  background-position: 0 0, 0 18px;
+  padding: 26px 40px 110px 84px; color: #2a2a3a;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 56px), calc(100% - 56px) 100%, 0 100%);
+}
+.notepad .fold { position: absolute; right: 0; bottom: 0; width: 56px; height: 56px;
+  background: linear-gradient(to bottom right, #e9d863 0%, #f6e77c 48%, transparent 50%);
+  filter: drop-shadow(-4px -4px 4px rgba(0,0,0,.18)); border-radius: 0 0 0 4px; }
+.notepad h3 { font-family: "Caveat", "Noteworthy", "Bradley Hand", "Marker Felt", "Segoe Print", cursive; font-weight: 700; font-size: 52px; line-height: var(--line); margin: 0 0 var(--line); color: #1f2f6b; transform: rotate(-1deg); }
+.notepad h3 u { text-decoration-color: #e2575b; text-decoration-thickness: 3px; text-underline-offset: 6px; }
+.notepad ul { list-style: none; margin: 0; padding: 0; }
+.notepad li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; cursor: pointer; font-family: "Caveat", "Noteworthy", "Bradley Hand", "Marker Felt", "Segoe Print", cursive; font-size: 27px; line-height: var(--line); }
+.notepad li .box { width: 21px; height: 21px; border: 2.5px solid #2a2a3a; border-radius: 3px; margin-top: 9px; transform: rotate(-4deg);
+  display: grid; place-items: center; color: #c0262c; font-size: 30px; font-weight: 700; line-height: 0; }
+.notepad li .item b { font-weight: 700; color: #1f2f6b; }
+.notepad li .item small { font-size: 23px; color: #4f5a7a; }
+.notepad li .item { position: relative; }
+.notepad li.done .item b, .notepad li.done .item small { text-decoration: line-through; text-decoration-color: #c0262c; text-decoration-thickness: 3px; }
+.notepad li.done .item { opacity: .7; }
+.pencil { position: absolute; right: max(-30px, calc(50% - 470px)); top: 120px; width: 46px; transform: rotate(18deg); filter: drop-shadow(4px 8px 6px rgba(0,0,0,.4)); }
+@media (max-width: 900px) { .pencil { display: none; } .notepad .paper { padding: 22px 22px 62px 76px; } }
+
+/* ---------------- CREDITS ---------------- */
+.credits { background: var(--maroon-deep); }
+.team { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; margin-top: 36px; }
+.person { background: var(--maroon-deep); border-radius: 18px; padding: 24px; transition: transform .3s; }
+.person:hover { transform: translateY(-6px) rotate(-.5deg); }
+.avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--cream); color: var(--maroon); display: grid; place-items: center; font-family: var(--display); font-weight: 900; font-size: 28px; margin-bottom: 14px; }
+.person h4 { margin: 0; font-size: 20px; }
+.person p { margin: 6px 0 0; color: var(--cream-dim); font-size: 15px; }
+footer { padding: 40px 20px 60px; text-align: center; color: var(--cream-dim); font-size: 14px; background: var(--maroon-deep); }
+
+@media (max-width: 560px) {
+  nav.top a { padding: 6px 10px; font-size: 13px; }
+  .verdict { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .seg button { padding: 9px 12px; font-size: 14px; }
+  .controls { margin-top: 28px; }
+  .meter { right: 10px; } .meter .track { height: 24vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  .hero h1 span { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="shadeBall" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
+    <clipPath id="clipBall"><circle cx="50" cy="50" r="46"/></clipPath>
+    <clipPath id="clipHead"><ellipse cx="30" cy="40" rx="22" ry="32"/></clipPath>
+  </defs>
+  <symbol id="i-basketball" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="#e8762c"/>
+    <g fill="none" stroke="#3a1608" stroke-width="3" clip-path="url(#clipBall)">
+      <path d="M50 2 V98"/><path d="M2 50 H98"/><path d="M16 12 Q44 50 16 88"/><path d="M84 12 Q56 50 84 88"/>
+    </g>
+    <circle cx="50" cy="50" r="46" fill="url(#shadeBall)"/>
+  </symbol>
+  <symbol id="i-volleyball" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="#f5f2ea"/>
+    <g clip-path="url(#clipBall)">
+      <path d="M50 50 C36 34 38 14 54 2 L100 0 L100 34 C82 30 64 36 50 50Z" fill="#245bc9"/>
+      <path d="M50 50 C70 56 82 74 78 100 L22 100 C34 84 44 70 50 50Z" fill="#f2c230"/>
+      <path d="M50 50 C30 56 14 52 0 40 L0 70 C18 72 36 66 50 50Z" fill="#245bc9"/>
+      <g fill="none" stroke="#bdb6a6" stroke-width="2"><path d="M50 50 C36 34 38 14 54 2"/><path d="M50 50 C64 36 82 30 100 34"/><path d="M50 50 C70 56 82 74 78 100"/><path d="M50 50 C44 70 34 84 22 100"/><path d="M50 50 C30 56 14 52 0 40"/></g>
+    </g>
+    <circle cx="50" cy="50" r="46" fill="url(#shadeBall)"/>
+  </symbol>
+  <symbol id="i-soccer" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="#f7f7f4"/>
+    <g clip-path="url(#clipBall)" fill="#1d1d22">
+      <polygon points="50,36 63.3,45.7 58.2,61.3 41.8,61.3 36.7,45.7"/>
+      <polygon points="50,-4 62,4 58,16 42,16 38,4"/><polygon points="92,26 104,36 98,50 86,48 82,34"/>
+      <polygon points="82,82 90,94 80,104 68,98 70,84"/><polygon points="18,82 30,84 32,98 20,104 10,94"/><polygon points="8,26 18,34 14,48 2,50 -4,36"/>
+      <g stroke="#1d1d22" stroke-width="2.5"><line x1="50" y1="36" x2="50" y2="16"/><line x1="63.3" y1="45.7" x2="83" y2="40"/><line x1="58.2" y1="61.3" x2="70" y2="84"/><line x1="41.8" y1="61.3" x2="30" y2="84"/><line x1="36.7" y1="45.7" x2="17" y2="40"/></g>
+    </g>
+    <circle cx="50" cy="50" r="46" fill="url(#shadeBall)"/>
+  </symbol>
+  <symbol id="i-racket" viewBox="0 0 60 170">
+    <g clip-path="url(#clipHead)" stroke="#e8e8e8" stroke-width=".9">
+      <path d="M8 12 H52 M8 18 H52 M8 24 H52 M8 30 H52 M8 36 H52 M8 42 H52 M8 48 H52 M8 54 H52 M8 60 H52 M8 66 H52"/>
+      <path d="M12 6 V74 M18 6 V74 M24 6 V74 M30 6 V74 M36 6 V74 M42 6 V74 M48 6 V74"/>
+    </g>
+    <ellipse cx="30" cy="40" rx="24" ry="34" fill="none" stroke="#1f6feb" stroke-width="5"/>
+    <path d="M22 72 L30 90 L38 72" fill="none" stroke="#1f6feb" stroke-width="4"/>
+    <line x1="30" y1="90" x2="30" y2="128" stroke="#a7adb7" stroke-width="3.5"/>
+    <rect x="24" y="126" width="12" height="40" rx="5" fill="#1b1b1f"/>
+    <path d="M24 134 L36 130 M24 142 L36 138 M24 150 L36 146 M24 158 L36 154" stroke="#e23b3b" stroke-width="2"/>
+  </symbol>
+  <symbol id="i-shuttle" viewBox="0 0 60 84">
+    <path d="M17 60 L3 8 Q30 0 57 8 L43 60 Z" fill="#fbfaf6"/>
+    <path d="M3 8 Q8 14 13 8 Q18 14 23 8 Q28 14 33 8 Q38 14 43 8 Q48 14 53 8 L57 8" fill="none" stroke="#d6d2c6" stroke-width="1.5"/>
+    <g stroke="#d6d2c6" stroke-width="1.2"><line x1="20" y1="60" x2="10" y2="10"/><line x1="25" y1="60" x2="22" y2="9"/><line x1="30" y1="60" x2="30" y2="8"/><line x1="35" y1="60" x2="38" y2="9"/><line x1="40" y1="60" x2="50" y2="10"/></g>
+    <rect x="16" y="56" width="28" height="6" rx="2" fill="#d9302c"/>
+    <path d="M16 62 Q16 82 30 82 Q44 82 44 62 Z" fill="#efe6d4"/>
+  </symbol>
+  <symbol id="i-paddle" viewBox="0 0 70 150">
+    <rect x="6" y="4" width="58" height="84" rx="24" fill="#13a6a6" stroke="#0b5e5e" stroke-width="4"/>
+    <path d="M14 24 Q35 10 56 24" fill="none" stroke="#7fe0e0" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+    <rect x="26" y="84" width="18" height="60" rx="7" fill="#232327"/>
+    <path d="M26 96 L44 92 M26 106 L44 102 M26 116 L44 112 M26 126 L44 122" stroke="#4a4a52" stroke-width="2"/>
+  </symbol>
+  <symbol id="i-pickleball" viewBox="0 0 50 50">
+    <circle cx="25" cy="25" r="23" fill="#d8e634"/>
+    <g fill="#9faa1e"><circle cx="25" cy="10" r="3"/><circle cx="13" cy="18" r="3"/><circle cx="37" cy="18" r="3"/><circle cx="25" cy="25" r="3"/><circle cx="14" cy="33" r="3"/><circle cx="36" cy="33" r="3"/><circle cx="25" cy="40" r="3"/></g>
+    <circle cx="25" cy="25" r="23" fill="url(#shadeBall)"/>
+  </symbol>
+  <symbol id="i-stopwatch" viewBox="0 0 80 96">
+    <rect x="32" y="2" width="16" height="10" rx="3" fill="#c7ccd4"/><rect x="36" y="10" width="8" height="8" fill="#9aa1ab"/>
+    <rect x="62" y="16" width="10" height="8" rx="2" fill="#c7ccd4" transform="rotate(40 67 20)"/>
+    <circle cx="40" cy="56" r="36" fill="#e23b3b"/><circle cx="40" cy="56" r="29" fill="#fbfaf6"/>
+    <g stroke="#2a2a2f" stroke-width="2.5" stroke-linecap="round"><line x1="40" y1="30" x2="40" y2="35"/><line x1="66" y1="56" x2="61" y2="56"/><line x1="40" y1="82" x2="40" y2="77"/><line x1="14" y1="56" x2="19" y2="56"/></g>
+    <line x1="40" y1="56" x2="40" y2="37" stroke="#2a2a2f" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="40" y1="56" x2="54" y2="64" stroke="#e23b3b" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="40" cy="56" r="3.5" fill="#2a2a2f"/>
+  </symbol>
+</svg>
+<div id="progress"></div>
+
+<nav class="top" id="nav">
+  <a href="#explore">Courts</a>
+  <a href="#findings">Findings</a>
+  <a href="#method">How we did it</a>
+  <a href="#credits">Credits</a>
+</nav>
+
+<button class="fab" id="fab" aria-label="Open menu" aria-expanded="false"><span class="fab-label">MENU</span><svg class="ball" viewBox="0 0 100 100" aria-hidden="true"><use href="#i-volleyball"/></svg></button>
+<div class="fab-menu" id="fabMenu">
+  <a href="#explore"><span class="ic">🏀</span><span><small>Tip-off</small><b>Find your court</b></span></a>
+  <a href="#findings"><span class="ic">📊</span><span><small>Box score</small><b>What the numbers say</b></span></a>
+  <a href="#method"><span class="ic">🎬</span><span><small>Film room</small><b>How we pulled it off</b></span></a>
+  <a href="#credits"><span class="ic">🤝</span><span><small>Locker room</small><b>Meet the squad</b></span></a>
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="hero">
+  <svg class="hero-lines" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke="#f6efe6" stroke-width="3">
+      <rect x="60" y="60" width="1080" height="580"/>
+      <line x1="600" y1="60" x2="600" y2="640"/>
+      <circle cx="600" cy="350" r="90"/>
+      <rect x="60" y="250" width="200" height="200"/><rect x="940" y="250" width="200" height="200"/>
+      <path d="M60 110 H140 A260 260 0 0 1 140 590 H60"/><path d="M1140 110 H1060 A260 260 0 0 0 1060 590 H1140"/>
+    </g>
+  </svg>
+  <div class="hero-inner">
+    <div class="eyebrow">Texas A&amp;M Rec Center · Court Study</div>
+    <h1 class="display" aria-label="CourtCheck"><span style="animation-delay:.05s">Court</span><span style="animation-delay:.18s">Check</span></h1>
+    <p class="lead">The floor you play on <b>gets more slippery between cleanings.</b> We wiped every court to find out which ones, and when.</p>
+  </div>
+  <div class="scroll-cue"><div class="pill"></div>Scroll</div>
+</header>
+
+<!-- ============ SCROLL SCENE ============ -->
+<section class="scene" id="scene" aria-label="How dust makes a shoe slip">
+  <div class="scene-sticky">
+    <svg class="stage" id="stage" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e2b277"/><stop offset="1" stop-color="#a8733f"/>
+        </linearGradient>
+        <pattern id="planks" x="0" y="430" width="160" height="140" patternUnits="userSpaceOnUse">
+          <rect width="160" height="140" fill="url(#floorGrad)"/>
+          <line x1="0" y1="0" x2="0" y2="140" stroke="#9c6a38" stroke-width="2" opacity=".5"/>
+          <line x1="80" y1="0" x2="80" y2="140" stroke="#9c6a38" stroke-width="1" opacity=".3"/>
+        </pattern>
+        <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#7a1414"/><stop offset="1" stop-color="#2b0000"/></radialGradient>
+        <filter id="soft"><feGaussianBlur stdDeviation="2"/></filter>
+      </defs>
+      <rect width="1000" height="560" fill="url(#glow)"/>
+      <!-- floor (perspective-ish band) -->
+      <rect x="-200" y="430" width="1400" height="140" fill="url(#planks)"/>
+      <rect x="-200" y="430" width="1400" height="6" fill="#f2c98f" opacity=".6"/>
+      <rect id="dustLayer" x="-200" y="430" width="1400" height="140" fill="#8f8577" opacity="0"/>
+      <g id="skid"><line id="skidLine" x1="290" y1="440" x2="290" y2="440" stroke="#5c3b1f" stroke-width="6" stroke-linecap="round" opacity=".55"/></g>
+      <g id="particles"></g>
+      <g id="puff"></g>
+
+      <!-- sneaker -->
+      <g id="shoe">
+        <g id="shoeBody" transform="translate(240,432)">
+          <!-- shadow -->
+          <ellipse cx="160" cy="4" rx="170" ry="9" fill="#000" opacity=".25" filter="url(#soft)"/>
+          <!-- outsole -->
+          <path d="M8 -6 Q0 -6 2 -20 L4 -30 L300 -30 Q338 -28 336 -12 Q334 0 312 0 L18 0 Q8 0 8 -6Z" fill="#7a1111"/>
+          <g stroke="#4a0606" stroke-width="3" opacity=".7">
+            <line x1="30" y1="-2" x2="38" y2="-12"/><line x1="60" y1="-2" x2="68" y2="-12"/><line x1="90" y1="-2" x2="98" y2="-12"/>
+            <line x1="120" y1="-2" x2="128" y2="-12"/><line x1="150" y1="-2" x2="158" y2="-12"/><line x1="180" y1="-2" x2="188" y2="-12"/>
+            <line x1="210" y1="-2" x2="218" y2="-12"/><line x1="240" y1="-2" x2="248" y2="-12"/><line x1="270" y1="-2" x2="278" y2="-12"/>
+            <line x1="300" y1="-2" x2="308" y2="-12"/>
+          </g>
+          <!-- midsole -->
+          <path d="M4 -30 L4 -52 Q4 -60 14 -60 L250 -58 Q320 -54 334 -34 L336 -28 Q300 -32 290 -30 Z" fill="#f6efe6"/>
+          <!-- upper -->
+          <path d="M14 -60 L12 -150 Q14 -182 52 -186 L104 -188 Q126 -176 134 -150 L180 -126 Q250 -104 300 -84 Q336 -70 334 -40 Q320 -54 250 -58 Z" fill="#b01c1c"/>
+          <!-- toe cap -->
+          <path d="M250 -58 Q320 -54 334 -40 Q336 -70 300 -84 Q262 -98 240 -98 Q236 -76 250 -58Z" fill="#f6efe6" opacity=".92"/>
+          <!-- heel counter -->
+          <path d="M12 -64 L12 -140 Q40 -120 46 -64 Z" fill="#7a1111"/>
+          <!-- collar -->
+          <path d="M14 -150 Q14 -182 52 -186 L104 -188 Q90 -168 60 -160 Q30 -154 14 -150Z" fill="#2b0000"/>
+          <!-- stripe -->
+          <path d="M70 -72 Q150 -140 238 -104 Q160 -116 96 -66Z" fill="#f6efe6"/>
+          <!-- laces -->
+          <g stroke="#f6efe6" stroke-width="5" stroke-linecap="round">
+            <line x1="128" y1="-160" x2="150" y2="-170"/><line x1="146" y1="-148" x2="170" y2="-156"/>
+            <line x1="166" y1="-136" x2="190" y2="-143"/><line x1="186" y1="-124" x2="210" y2="-130"/>
+          </g>
+          <!-- tongue -->
+          <path d="M104 -188 Q120 -214 146 -206 Q140 -186 134 -168Z" fill="#7a1111"/>
+        </g>
+      </g>
+      <rect class="flashRect" id="flash" width="1000" height="560" fill="#ff5a46" opacity="0"/>
+    </svg>
+
+    <div class="keep" id="keep" aria-hidden="true"></div>
+    <div class="captions" aria-live="polite">
+      <div class="caption" data-c="0"><div class="display">Clean floor.<br>Full grip.</div><p>Rubber on fresh hardwood holds on tight. That's what keeps your cuts sharp.</p></div>
+      <div class="caption" data-c="1"><div class="display">Every game<br>drops dust.</div><p>Shoes, sweat and foot traffic leave a layer you can barely see.</p></div>
+      <div class="caption" data-c="2"><div class="display">Dust rolls<br>like marbles.</div><p>Tiny particles get between your sole and the floor, and the grip disappears.</p></div>
+      <div class="caption" data-c="3"><div class="display">That's how<br>ankles roll.</div><p>So how dusty are the rec courts? We went and measured.</p></div>
+    </div>
+
+    <div class="meter" aria-hidden="true">
+      <div class="val" id="meterVal">100%</div>
+      <div class="track"><div class="fill" id="meterFill" style="height:100%"></div></div>
+      <div class="lbl">GRIP</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXPLORER ============ -->
+<section class="block explorer" id="explore">
+  <div class="wrap">
+    <div class="eyebrow reveal">Find your court</div>
+    <h2 class="display reveal d1">When should<br>you play?</h2>
+    <p class="sub-lead reveal d2">Pick a time and who you are. Tap any court for the full story.</p>
+
+    <div class="controls reveal">
+      <div>
+        <div class="ctl-label">Time</div>
+        <div class="seg" id="timeSeg"><div class="thumb"></div></div>
+      </div>
+      <div>
+        <div class="ctl-label">I'm a…</div>
+        <div class="seg" id="whoSeg"><div class="thumb"></div></div>
+      </div>
+    </div>
+
+    <div class="verdict reveal" id="verdict"><div class="big" id="verdictTag"></div><div class="text" id="verdictText"></div></div>
+
+    <div class="courts" id="courts"></div>
+    <p class="fine reveal" style="margin-top:22px">Dust % = how much grip a shoe loses compared with a freshly cleaned floor. Each court's numbers are the average of the 2–3 cloth samples we took there. 4 PM is measured; 7 PM and 10 PM are projected from the Rec's cleaning schedule.</p>
+  </div>
+</section>
+
+<!-- ============ FINDINGS ============ -->
+<section class="block" id="findings" style="background:var(--maroon-deep)">
+  <div class="wrap">
+    <div class="eyebrow reveal">What we found</div>
+    <h2 class="display reveal d1">By the numbers.</h2>
+    <div class="stats">
+      <div class="stat reveal"><div class="num display" data-count="__SAMPLES__">0</div><div class="what">cloth wipes across the Rec's courts</div></div>
+      <div class="stat reveal d1"><div class="num display" data-count="__GROUPS__">0</div><div class="what">kinds of courts, from basketball to badminton</div></div>
+      <div class="stat reveal d2"><div class="num display" data-count="__MAXDUST__" data-suffix="%">0</div><div class="what">of grip lost on the dustiest court we measured</div></div>
+      <div class="stat reveal d3"><div class="num display" data-count="3">0</div><div class="what">times of day, so you can pick your moment</div></div>
+    </div>
+
+    <div class="charts">
+      <figure class="chart reveal">
+        <figcaption><div class="eyebrow">Dust vs. grip</div><h3>Dirtier cloth, slipperier floor</h3></figcaption>
+        <div class="plot" id="scatter"></div>
+        <div class="legend"><span><i class="lg-solid"></i>Measured (4 PM)</span><span><i class="lg-hollow"></i>Projected (7 &amp; 10 PM)</span></div>
+        <p class="insight" id="scatterInsight"></p>
+        <p class="foot-note">* <b>Coefficient of friction:</b> the force it took to drag the shoe until it slid, divided by the shoe's weight (__SHOE__ lb, shoe plus a water bottle). Higher means more grip. Around 1.0 means it took about as much force to slide the shoe as the shoe weighs.</p>
+        <p class="foot-note">** <b>Discoloration index:</b> how much darker the cloth got after wiping a court, compared with a clean cloth, measured from photos by our code. 0 means spotless; higher means more dust.</p>
+      </figure>
+      <figure class="chart reveal d1">
+        <figcaption><div class="eyebrow">Measured at 4 PM</div><h3>Which court left the dirtiest cloth?</h3></figcaption>
+        <div class="plot" id="barchart"></div>
+        <p class="insight" id="barInsight"></p>
+        <p class="foot-note">The longer the bar, the more dust our cloth picked up from that court (discoloration index**).</p>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- drawer -->
+<div class="backdrop" id="backdrop"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dName">
+  <div class="grab"></div>
+  <button class="close" id="dClose" aria-label="Close">×</button>
+  <div class="eyebrow" id="dIds"></div>
+  <h2 class="display" id="dName"></h2>
+  <div class="meta" id="dMeta"></div>
+  <div class="ring-row">
+    <div class="ring">
+      <svg width="170" height="170" viewBox="0 0 170 170">
+        <circle cx="85" cy="85" r="72" fill="none" stroke="rgba(246,239,230,.1)" stroke-width="14"/>
+        <circle class="arc" id="dArc" cx="85" cy="85" r="72" fill="none" stroke="var(--low)" stroke-width="14" stroke-linecap="round" stroke-dasharray="452.4" stroke-dashoffset="452.4"/>
+      </svg>
+      <div class="c"><div><b id="dPct">0%</b><small>dust</small></div></div>
+    </div>
+    <div>
+      <div class="eyebrow">Slip risk</div>
+      <div class="risk" id="dRisk"></div>
+      <p class="fine" id="dCompare" style="margin-top:10px"></p>
+    </div>
+  </div>
+  <div class="eyebrow" style="margin-bottom:8px">Through the evening</div>
+  <div class="timeline" id="dTimeline"></div>
+  <div class="tips" id="dTips"></div>
+</aside>
+
+<!-- ============ METHOD ============ -->
+<section class="block" id="method" style="background:var(--maroon)">
+  <div class="wrap">
+    <div class="eyebrow reveal">How we did it</div>
+    <h2 class="display reveal d1">A cloth, a camera<br>and a shoe.</h2>
+    <div class="steps">
+      <div class="step reveal"><div class="n">01</div>
+        <svg viewBox="0 0 54 54" fill="none" stroke="#f6efe6" stroke-width="3" stroke-linecap="round"><rect x="8" y="14" width="38" height="28" rx="4"/><path d="M14 22 Q27 30 40 22M14 30 Q27 38 40 30"/></svg>
+        <h3>Wipe</h3><p>On every court we wiped 2 or 3 same-size patches with a clean white cloth, same strokes every time.</p></div>
+      <div class="step reveal d1"><div class="n">02</div>
+        <svg viewBox="0 0 54 54" fill="none" stroke="#f6efe6" stroke-width="3" stroke-linecap="round"><rect x="6" y="15" width="42" height="28" rx="5"/><circle cx="27" cy="29" r="8"/><path d="M19 15 L22 9 H32 L35 15"/></svg>
+        <h3>Photograph</h3><p>Our code compares each dirty cloth with a clean one and measures how much darker it got.</p></div>
+      <div class="step reveal d2"><div class="n">03</div>
+        <svg viewBox="0 0 54 54" fill="none" stroke="#f6efe6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 40 H40 Q48 40 48 34 Q48 28 38 26 L28 22 L24 12 H10 Z"/><path d="M48 34 H52"/><path d="M2 46 H52"/></svg>
+        <h3>Pull</h3><p>We weighted a shoe with a water bottle and dragged it with a spring scale. The less force it takes to slide, the slipperier the floor.</p></div>
+    </div>
+
+    <div class="method-grid">
+      <div class="reveal">
+        <div class="method-step"><div class="n">1</div><div><h4>Where</h4><p>Texas A&amp;M Rec Center: __GROUPS__ court types, __COURTS__ courts, __SAMPLES__ cloth samples in total (2 or 3 per court).</p></div></div>
+        <div class="method-step"><div class="n">2</div><div><h4>When</h4><p>We measured at 4 PM. Staff clean around noon and 7 PM (badminton isn't cleaned in the evening), so we projected 7 PM and 10 PM from our 4 PM readings and that schedule.</p></div></div>
+        <div class="method-step"><div class="n">3</div><div><h4>The numbers</h4><p>We put a full water bottle in the shoe so it weighed __SHOE__ lb in total, then pulled it sideways with a spring scale and read the force when it started to slide. On a clean floor that took __CLEAN__ lb. Dust % is how much less force each court needed compared with that clean floor.</p></div></div>
+        <div class="method-step"><div class="n">4</div><div><h4>Limits</h4><p>Only 2–3 cloth samples per court (we averaged them), phone photos under gym lighting, and a homemade spring-scale pull test. Good for comparing courts, not lab-grade.</p></div></div>
+      </div>
+      <div class="reveal d1">
+        <div class="cloths" id="cloths"></div>
+      </div>
+    </div>
+
+    <div class="pad-wrap reveal">
+      <div class="eyebrow">Try it yourself</div>
+      <div class="pad-stage">
+      <div class="pad-shadow"></div>
+      <div class="notepad">
+        <div class="sheet s2"></div><div class="sheet s1"></div>
+        <div class="binding"></div>
+        <div class="paper">
+          <h3><u>Grocery list</u></h3>
+          <ul id="recipe">
+            <li><span class="box"></span><span class="item"><b>White washcloths</b> <small>2–3 per court + one clean one</small></span></li>
+            <li><span class="box"></span><span class="item"><b>Basketball shoe</b> <small>same shoe for every pull</small></span></li>
+            <li><span class="box"></span><span class="item"><b>Full water bottle</b> <small>goes in the shoe for weight</small></span></li>
+            <li><span class="box"></span><span class="item"><b>Spring scale</b> <small>read the force when it slides</small></span></li>
+            <li><span class="box"></span><span class="item"><b>Phone camera</b> <small>same lighting for every cloth</small></span></li>
+            <li><span class="box"></span><span class="item"><b>Spreadsheet</b> <small>court, time, pull force</small></span></li>
+            <li><span class="box"></span><span class="item"><b>Python + OpenCV</b> <small>photos → discoloration index</small></span></li>
+            <li><span class="box"></span><span class="item"><b>Rec staff's OK</b> <small>test between games, never during</small></span></li>
+          </ul>
+          <svg class="doodle" viewBox="0 0 140 90" fill="none" stroke="#1f2f6b" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+            <circle cx="34" cy="48" r="26"/><path d="M34 22 V74 M8 48 H60 M16 30 Q30 48 16 66 M52 30 Q38 48 52 66"/>
+            <ellipse cx="102" cy="28" rx="14" ry="20" transform="rotate(25 102 28)"/><path d="M96 44 L86 78"/><path d="M95 20 L111 34 M92 26 L106 40 M100 14 L114 28"/>
+            <path d="M70 82 q6 -6 12 0 t12 0" stroke="#c0262c"/>
+          </svg>
+        </div>
+        <div class="fold"></div>
+      </div>
+      </div>
+      <svg class="paperclip" viewBox="0 0 40 122" aria-hidden="true"><path d="M14 34 V96 A8 8 0 0 0 30 96 V20 A12 12 0 0 0 6 20 V100 A14 14 0 0 0 34 100 V40" fill="none" stroke="#aeb6c1" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 34 V96 A8 8 0 0 0 30 96 V20 A12 12 0 0 0 6 20 V100 A14 14 0 0 0 34 100 V40" fill="none" stroke="#f1f4f8" stroke-width="1.4" stroke-linecap="round" opacity=".85" transform="translate(-.8 -.8)"/></svg>
+      <svg class="pencil" viewBox="0 0 40 260" aria-hidden="true">
+        <rect x="6" y="20" width="28" height="190" fill="#f3b61f"/><rect x="6" y="20" width="9" height="190" fill="#f7cc55"/><rect x="25" y="20" width="9" height="190" fill="#d99a12"/>
+        <rect x="6" y="2" width="28" height="22" rx="4" fill="#f08aa0"/><rect x="5" y="20" width="30" height="14" fill="#b9bcc4"/><line x1="5" y1="27" x2="35" y2="27" stroke="#8d9099" stroke-width="2"/>
+        <path d="M6 210 L20 250 L34 210 Z" fill="#f2d4a6"/><path d="M15 236 L20 250 L25 236 Z" fill="#333"/>
+      </svg>
+    </div>
+
+    <details class="reveal">
+      <summary>See the raw numbers</summary>
+      <p class="fine" style="margin:0 0 10px">Each row is the <b>average</b> of all the cloth samples (2–3 per court) we took on the courts of that type.</p>
+      <div style="overflow-x:auto"><table id="rawTable"></table></div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ CREDITS ============ -->
+<section class="block credits" id="credits">
+  <div class="wrap">
+    <div class="eyebrow reveal">Credits</div>
+    <h2 class="display reveal d1">Who wiped<br>the floors.</h2>
+    <div class="team">
+      <!-- TODO: replace with your team -->
+      <div class="person reveal"><div class="avatar">YN</div><h4>Your Name</h4><p>What you did on the project.</p></div>
+      <div class="person reveal d1"><div class="avatar">TN</div><h4>Teammate Name</h4><p>What they did on the project.</p></div>
+    </div>
+  </div>
+</section>
+<footer>Built at TAMU Datathon · CourtCheck</footer>
+
+<script>
+const DATA = __DATA__;
+const PHOTOS = __PHOTOS__;
+const TIMES = ["4 PM", "7 PM", "10 PM"];
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const riskOf = d => d < 10 ? ["Low", "var(--low)"] : d < 30 ? ["Moderate", "var(--mid)"] : d < 50 ? ["High", "var(--high)"] : ["Severe", "var(--severe)"];
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const seg = (p, a, b) => clamp((p - a) / (b - a));
+
+/* ---------- progress bar + nav ---------- */
+const progress = document.getElementById("progress");
+const nav = document.getElementById("nav");
+const navLinks = [...nav.querySelectorAll("a")];
+
+/* ---------- floating menu ---------- */
+const fab = document.getElementById("fab"), fabMenu = document.getElementById("fabMenu");
+function closeFab() { fab.classList.remove("open"); fabMenu.classList.remove("open"); fab.setAttribute("aria-expanded", "false"); }
+fab.onclick = () => { const o = !fab.classList.contains("open"); fab.classList.toggle("open", o); fabMenu.classList.toggle("open", o); fab.setAttribute("aria-expanded", o); };
+fabMenu.querySelectorAll("a").forEach(a => a.addEventListener("click", closeFab));
+
+/* smooth jump for every menu link */
+document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener("click", e => {
+  const t = document.querySelector(a.getAttribute("href"));
+  if (!t) return;
+  e.preventDefault();
+  window.scrollTo({ top: t.getBoundingClientRect().top + scrollY - 70, behavior: reduceMotion ? "auto" : "smooth" });
+}));
+
+/* ---------- keep scrolling (letters jumbled side to side) ---------- */
+const keep = document.getElementById("keep");
+keep.innerHTML = [..."KEEP SCROLLING"].map((ch, i) => ch === " "
+  ? '<span class="gap"></span>'
+  : `<span style="margin-left:${Math.round(Math.sin(i * 1.7) * 9 + 9)}px;rotate:${Math.round(Math.cos(i * 2.3) * 12)}deg;animation-delay:${(i * .09).toFixed(2)}s">${ch}</span>`
+).join("") + '<span class="arrow">↓</span>';
+
+/* ---------- hero mouse glow ---------- */
+const hero = document.getElementById("hero");
+hero.addEventListener("pointermove", e => {
+  const r = hero.getBoundingClientRect();
+  hero.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100) + "%");
+  hero.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100) + "%");
+});
+
+/* ---------- scroll scene ---------- */
+const scene = document.getElementById("scene");
+const shoe = document.getElementById("shoe");
+const dustLayer = document.getElementById("dustLayer");
+const particlesG = document.getElementById("particles");
+const puffG = document.getElementById("puff");
+const skidLine = document.getElementById("skidLine");
+const flash = document.getElementById("flash");
+const meterFill = document.getElementById("meterFill");
+const meterVal = document.getElementById("meterVal");
+const captions = [...document.querySelectorAll(".caption")];
+
+// falling dust particles with fixed random paths
+const NS = "http://www.w3.org/2000/svg";
+const particles = Array.from({ length: 90 }, (_, i) => {
+  const c = document.createElementNS(NS, "circle");
+  const x = Math.random() * 1000, y0 = -20 - Math.random() * 300, y1 = 432 + Math.random() * 8;
+  const r = 1.5 + Math.random() * 3, delay = Math.random() * .6, drift = (Math.random() - .5) * 60;
+  c.setAttribute("r", r); c.setAttribute("fill", i % 3 ? "#cbbfae" : "#a39684");
+  particlesG.appendChild(c);
+  return { c, x, y0, y1, delay, drift };
+});
+const puffs = Array.from({ length: 16 }, () => {
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("fill", "#cbbfae");
+  puffG.appendChild(c);
+  return { c, ang: Math.PI + (Math.random() - .5) * 1.4, dist: 40 + Math.random() * 90, r: 6 + Math.random() * 14 };
+});
+
+function renderScene(p) {
+  // phases: 0-.22 clean | .22-.5 dust falls | .5-.78 slide | .78-1 ankle roll warning
+  const fall = seg(p, .22, .5), slide = seg(p, .5, .78), roll = seg(p, .78, .95);
+
+  particles.forEach(o => {
+    const t = clamp((fall - o.delay * .5) / .5);
+    const ease = 1 - Math.pow(1 - t, 2);
+    o.c.setAttribute("cx", o.x + o.drift * t);
+    o.c.setAttribute("cy", lerp(o.y0, o.y1, ease));
+    o.c.setAttribute("opacity", t > 0 ? .9 : 0);
+  });
+  dustLayer.setAttribute("opacity", (fall * .38).toFixed(3));
+
+  const slideEase = 1 - Math.pow(1 - slide, 3);
+  const dx = slideEase * 250;
+  const tilt = roll * -9 + Math.sin(slide * Math.PI) * -3;
+  shoe.setAttribute("transform", `translate(${dx},0) rotate(${tilt} ${252 + dx} 432)`);
+  skidLine.setAttribute("x1", 290);
+  skidLine.setAttribute("x2", 290 + dx);
+  skidLine.setAttribute("opacity", slide > 0 ? .5 : 0);
+
+  puffs.forEach(o => {
+    const t = clamp(slide * 1.3);
+    o.c.setAttribute("cx", 250 + dx + Math.cos(o.ang) * o.dist * t);
+    o.c.setAttribute("cy", 425 + Math.sin(o.ang) * o.dist * .45 * t - t * 20);
+    o.c.setAttribute("r", o.r * (0.4 + t));
+    o.c.setAttribute("opacity", slide > 0 ? (1 - t) * .55 + .05 * (1 - roll) : 0);
+  });
+  flash.setAttribute("opacity", (Math.sin(roll * Math.PI) * .18).toFixed(3));
+
+  const grip = Math.round(100 - fall * 60 - slide * 0);
+  meterFill.style.height = grip + "%";
+  meterFill.style.background = grip > 80 ? "var(--low)" : grip > 60 ? "var(--mid)" : roll > .1 ? "var(--severe)" : "var(--high)";
+  meterVal.textContent = grip + "%";
+
+  const active = p < .22 ? 0 : p < .5 ? 1 : p < .78 ? 2 : 3;
+  const local = [seg(p, 0, .22), fall, slide, seg(p, .78, 1)][active];
+  captions.forEach((c, i) => {
+    const on = i === active;
+    const fadeIn = clamp(local * 6), fadeOut = i === 3 ? 1 : clamp((1 - local) * 6);
+    c.style.opacity = on ? Math.min(fadeIn, fadeOut) : 0;
+    c.style.transform = `translate(-50%, ${on ? (1 - fadeIn) * 20 : 20}px)`;
+  });
+  if (p === 0) { captions[0].style.opacity = 1; captions[0].style.transform = "translate(-50%,0)"; }
+}
+
+function onScroll() {
+  const h = document.documentElement;
+  const sc = h.scrollTop || document.body.scrollTop;
+  progress.style.width = (sc / (h.scrollHeight - h.clientHeight) * 100) + "%";
+  const pastHero = sc > innerHeight * .8;
+  nav.classList.toggle("show", pastHero);
+  fab.classList.toggle("gone", pastHero);
+  if (pastHero) closeFab();
+
+  const r = scene.getBoundingClientRect();
+  const p = clamp(-r.top / (r.height - innerHeight));
+  renderScene(reduceMotion ? (p > .5 ? 1 : 0) : p);
+  keep.style.opacity = p > .9 ? 0 : 1;
+
+  const ids = ["explore", "findings", "method", "credits"];
+  let cur = null;
+  ids.forEach(id => { const el = document.getElementById(id); if (el.getBoundingClientRect().top < innerHeight * .4) cur = id; });
+  navLinks.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + cur));
+}
+addEventListener("scroll", onScroll, { passive: true });
+addEventListener("resize", onScroll);
+
+/* ---------- reveal + count up ---------- */
+const io = new IntersectionObserver(entries => entries.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add("in");
+  e.target.querySelectorAll("[data-count]").forEach(countUp);
+  io.unobserve(e.target);
+}), { threshold: .2 });
+document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+function countUp(el) {
+  const target = +el.dataset.count, suffix = el.dataset.suffix || "";
+  if (reduceMotion) { el.textContent = target + suffix; return; }
+  const start = performance.now(), dur = 1400;
+  (function tick(now) {
+    const t = clamp((now - start) / dur), e = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(target * e) + suffix;
+    if (t < 1) requestAnimationFrame(tick);
+  })(start);
+}
+
+/* ---------- court drawings ---------- */
+function courtLines(type) {
+  const L = 'stroke="#fffaf2" stroke-width="1.6" fill="none"';
+  const net = 'stroke="#fffaf2" stroke-width="3"';
+  const base = `<rect x="8" y="8" width="184" height="94" ${L}/>`;
+  if (type.startsWith("Basketball")) return base + `<line x1="100" y1="8" x2="100" y2="102" ${L}/><circle cx="100" cy="55" r="12" ${L}/>
+    <rect x="8" y="40" width="34" height="30" ${L}/><rect x="158" y="40" width="34" height="30" ${L}/>
+    <path d="M8 18 H24 A40 40 0 0 1 24 92 H8" ${L}/><path d="M192 18 H176 A40 40 0 0 0 176 92 H192" ${L}/>`;
+  if (type === "Volleyball") return base + `<line x1="100" y1="4" x2="100" y2="106" ${net}/><line x1="70" y1="8" x2="70" y2="102" ${L}/><line x1="130" y1="8" x2="130" y2="102" ${L}/>`;
+  if (type === "Pickleball") return base + `<line x1="100" y1="4" x2="100" y2="106" ${net}/><line x1="72" y1="8" x2="72" y2="102" ${L}/><line x1="128" y1="8" x2="128" y2="102" ${L}/>
+    <line x1="8" y1="55" x2="72" y2="55" ${L}/><line x1="128" y1="55" x2="192" y2="55" ${L}/>`;
+  if (type === "Badminton") return base + `<line x1="100" y1="4" x2="100" y2="106" ${net}/><line x1="8" y1="15" x2="192" y2="15" ${L}/><line x1="8" y1="95" x2="192" y2="95" ${L}/>
+    <line x1="80" y1="8" x2="80" y2="102" ${L}/><line x1="120" y1="8" x2="120" y2="102" ${L}/><line x1="18" y1="8" x2="18" y2="102" ${L}/><line x1="182" y1="8" x2="182" y2="102" ${L}/>
+    <line x1="18" y1="55" x2="80" y2="55" ${L}/><line x1="120" y1="55" x2="182" y2="55" ${L}/>`;
+  return base + `<line x1="100" y1="8" x2="100" y2="102" ${L}/><circle cx="100" cy="55" r="14" ${L}/>
+    <path d="M8 30 A26 26 0 0 1 8 80" ${L}/><path d="M192 30 A26 26 0 0 0 192 80" ${L}/>
+    <rect x="2" y="46" width="6" height="18" ${L}/><rect x="192" y="46" width="6" height="18" ${L}/>`;
+}
+function courtSVG(c, i) {
+  let dots = "";
+  for (let k = 0; k < 140; k++) {
+    const x = 6 + Math.random() * 188, y = 6 + Math.random() * 98, r = .6 + Math.random() * 1.6;
+    dots += `<circle class="dust-dot" data-k="${k}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${k % 2 ? "#8f8577" : "#b3a895"}" opacity="0"/>`;
+  }
+  return `<svg viewBox="0 0 200 110" role="img" aria-label="${c.name} court">
+    <defs><pattern id="w${i}" width="200" height="11" patternUnits="userSpaceOnUse"><rect width="200" height="11" fill="#d8a46a"/><line x1="0" y1="10.5" x2="200" y2="10.5" stroke="#b98550"/></pattern></defs>
+    <rect width="200" height="110" fill="url(#w${i})"/>
+    <rect class="haze" width="200" height="110" fill="#8f8577" opacity="0" style="transition:opacity .6s"/>
+    ${courtLines(c.name)}${dots}</svg>`;
+}
+
+/* ---------- explorer ---------- */
+const PEOPLE = [
+  { id: "casual", label: "Casual / injured" },
+  { id: "staff", label: "Rec staff" },
+];
+let time = "4 PM", who = "casual";
+
+function buildSeg(el, items, onPick) {
+  items.forEach(it => {
+    const b = document.createElement("button");
+    b.innerHTML = it.html || it.label; b.dataset.v = it.id;
+    b.onclick = () => onPick(it.id);
+    el.appendChild(b);
+  });
+}
+function syncSeg(el, value) {
+  const thumb = el.querySelector(".thumb");
+  el.querySelectorAll("button").forEach(b => {
+    const on = b.dataset.v === value; b.classList.toggle("on", on);
+    if (on) { thumb.style.left = b.offsetLeft + "px"; thumb.style.width = b.offsetWidth + "px"; }
+  });
+}
+const timeSeg = document.getElementById("timeSeg"), whoSeg = document.getElementById("whoSeg");
+buildSeg(timeSeg, TIMES.map(t => ({ id: t, html: t + (t === "7 PM" ? '<span class="mop">just mopped</span>' : "") })), t => { time = t; update(); });
+buildSeg(whoSeg, PEOPLE, w => { who = w; update(); });
+
+const courtsEl = document.getElementById("courts");
+DATA.courts.forEach((c, i) => {
+  const el = document.createElement("div");
+  el.className = "court reveal" + (i % 3 ? " d" + (i % 3) : "");
+  el.tabIndex = 0; el.setAttribute("role", "button");
+  el.innerHTML = `<div class="badge-crown">Best pick</div>
+    <div class="head"><h3>${c.name}</h3><span class="ids">${c.court_label}</span></div>
+    ${courtSVG(c, i)}
+    <div class="foot"><span class="chip"><i></i><span class="risk-word"></span></span><span class="pct">0%</span></div>`;
+  el.onclick = () => openDrawer(i);
+  el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDrawer(i); } };
+  if (!reduceMotion) {
+    el.addEventListener("pointermove", e => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      el.style.transform = `rotateY(${x * 10}deg) rotateX(${-y * 10}deg) translateY(-4px) scale(1.03)`;
+    });
+    el.addEventListener("pointerleave", () => { el.style.transform = ""; });
+  }
+  courtsEl.appendChild(el);
+  io.observe(el);
+});
+
+function update() {
+  syncSeg(timeSeg, time); syncSeg(whoSeg, who);
+  const courts = DATA.courts.map((c, i) => ({ c, i, d: c.times[time].dustiness }));
+  const sorted = [...courts].sort((a, b) => a.d - b.d);
+  let best = new Set(), dim = new Set(), tag = "", text = "";
+
+  if (who === "casual") {
+    const s = sorted[0], w = sorted[sorted.length - 1];
+    best.add(s.i);
+    tag = "Safest floor";
+    text = `At ${time}, play on <b>${s.c.name}</b> (${s.d}% dust). Skip <b>${w.c.name}</b>: it's lost ${w.d}% of its grip.`;
+  } else if (who === "hooper") {
+    const hoops = courts.filter(x => x.c.name.startsWith("Basketball")).sort((a, b) => a.d - b.d);
+    best.add(hoops[0].i);
+    courts.forEach(x => { if (!x.c.name.startsWith("Basketball")) dim.add(x.i); });
+    tag = "Cleanest hoops";
+    text = `At ${time}, <b>${hoops[0].c.name}</b> (${hoops[0].c.court_label}) is cleaner: ${hoops[0].d}% dust vs ${hoops[1].d}%. Fewer sole wipes, cleaner shoes.`;
+  } else {
+    const dirty = [...sorted].reverse().slice(0, 2);
+    dirty.forEach(x => best.add(x.i));
+    tag = "Mop first";
+    text = `At ${time}, clean <b>${dirty[0].c.name}</b> (${dirty[0].d}% dust) and then <b>${dirty[1].c.name}</b> (${dirty[1].d}%).`;
+  }
+  const v = document.getElementById("verdict");
+  document.getElementById("verdictTag").textContent = tag;
+  document.getElementById("verdictText").innerHTML = text;
+  v.classList.remove("swap"); void v.offsetWidth; v.classList.add("swap");
+
+  [...courtsEl.children].forEach((el, i) => {
+    const d = DATA.courts[i].times[time].dustiness;
+    const [risk, color] = riskOf(d);
+    el.classList.toggle("best", best.has(i));
+    el.classList.toggle("dim", dim.has(i));
+    el.querySelector(".badge-crown").textContent = who === "staff" ? "Clean me" : "Best pick";
+    el.querySelector(".chip i").style.background = color;
+    el.querySelector(".risk-word").textContent = risk + " slip risk";
+    animateNumber(el.querySelector(".pct"), d, "%");
+    el.querySelector(".haze").setAttribute("opacity", (d / 100 * .55).toFixed(2));
+    const shown = Math.round(d / 100 * 140 * 1.4);
+    el.querySelectorAll(".dust-dot").forEach(dot => dot.setAttribute("opacity", +dot.dataset.k < shown ? .85 : 0));
+  });
+}
+function animateNumber(el, to, suffix) {
+  const from = parseInt(el.textContent) || 0;
+  if (reduceMotion || from === to) { el.textContent = to + suffix; return; }
+  const start = performance.now();
+  (function tick(now) {
+    const t = clamp((now - start) / 500), e = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(from + (to - from) * e) + suffix;
+    if (t < 1) requestAnimationFrame(tick);
+  })(start);
+}
+
+/* ---------- drawer ---------- */
+const drawer = document.getElementById("drawer"), backdrop = document.getElementById("backdrop");
+let open = null, dTime = "4 PM";
+function openDrawer(i) { open = i; dTime = time; renderDrawer(); drawer.classList.add("open"); backdrop.classList.add("open"); document.getElementById("dClose").focus(); }
+function closeDrawer() { drawer.classList.remove("open"); backdrop.classList.remove("open"); }
+backdrop.onclick = closeDrawer;
+document.getElementById("dClose").onclick = closeDrawer;
+addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+
+function renderDrawer() {
+  const c = DATA.courts[open], t = c.times[dTime], [risk, color] = riskOf(t.dustiness);
+  document.getElementById("dIds").textContent = c.court_label;
+  document.getElementById("dName").innerHTML = c.name + `<span class="tag">${t.measured ? "measured" : "projected"}</span>`;
+  document.getElementById("dMeta").textContent = `${c.samples} cloth samples, averaged · showing ${dTime}`;
+  const arc = document.getElementById("dArc");
+  arc.style.strokeDashoffset = 452.4 * (1 - t.dustiness / 100);
+  arc.style.stroke = color;
+  document.getElementById("dPct").textContent = t.dustiness + "%";
+  const rk = document.getElementById("dRisk"); rk.textContent = risk; rk.style.color = color;
+  const avg = Math.round(DATA.courts.reduce((s, x) => s + x.times[dTime].dustiness, 0) / DATA.courts.length);
+  const diff = t.dustiness - avg;
+  document.getElementById("dCompare").textContent = Math.abs(diff) < 3
+    ? `About average for the Rec at ${dTime}.`
+    : `${Math.abs(diff)} points ${diff > 0 ? "dustier" : "cleaner"} than the average court at ${dTime}.`;
+
+  document.getElementById("dTimeline").innerHTML = TIMES.map(tt => {
+    const v = c.times[tt], [, col] = riskOf(v.dustiness);
+    return `<button class="tl ${tt === dTime ? "on" : ""}" data-t="${tt}"><div class="t">${tt}${tt === "7 PM" && c.name !== "Badminton" ? " · mopped" : ""}</div>
+      <div class="bar"><span style="width:${Math.max(v.dustiness, 3)}%;background:${col}"></span></div><div class="v">${v.dustiness}% dust</div></button>`;
+  }).join("");
+  document.querySelectorAll("#dTimeline .tl").forEach(b => b.onclick = () => { dTime = b.dataset.t; renderDrawer(); });
+
+  const worst = c.worst_time, bestT = c.best_time;
+  document.getElementById("dTips").innerHTML = `
+    <div class="tip"><div class="ic">🩹</div><div><b>Casual or coming back from injury</b>Come at ${bestT}. ${worst !== bestT ? `Avoid ${worst}, the slipperiest time here.` : ""}</div></div>
+    <div class="tip"><div class="ic">🏀</div><div><b>Hoopers</b>${t.dustiness < 30 ? "Good floor right now. Your soles will stay clean." : "Wipe your soles between possessions at this time."}</div></div>
+    <div class="tip"><div class="ic">🧹</div><div><b>Rec staff</b>${c.name === "Badminton" ? "Not on the evening cleaning route, and it shows: dust keeps building all night." : t.dustiness >= 50 ? "Needs a mop now." : t.dustiness >= 30 ? "Due for a clean soon." : "Fine for now."}</div></div>`;
+}
+
+/* ---------- method: photos + raw table ---------- */
+document.getElementById("cloths").innerHTML = PHOTOS.map(p => `<figure><img src="${p.src}" alt="${p.name} cloth after wiping" loading="lazy"><figcaption>${p.name}</figcaption></figure>`).join("")
+  || '<p class="fine">Add cloth photos to data/photos to show them here.</p>';
+document.getElementById("rawTable").innerHTML = `<tr><th>Court</th><th>Time</th><th>Discoloration index</th><th>Pull force (lb)</th><th>Dust %</th><th>Source</th></tr>` +
+  DATA.courts.flatMap(c => TIMES.map(tt => {
+    const v = c.times[tt];
+    return `<tr><td>${c.name}</td><td>${tt}</td><td>${v.discoloration.toFixed(2)}</td><td>${v.friction.toFixed(2)}</td><td>${v.dustiness}%</td><td>${v.measured ? "Measured" : "Projected"}</td></tr>`;
+  })).join("");
+
+/* ---------- charts ---------- */
+const tipEl = document.createElement("div"); tipEl.className = "plot-tip"; document.body.appendChild(tipEl);
+function showTip(e, html) { tipEl.innerHTML = html; tipEl.style.opacity = 1; tipEl.style.left = (e.clientX + 14) + "px"; tipEl.style.top = (e.clientY - 34) + "px"; }
+function hideTip() { tipEl.style.opacity = 0; }
+
+function drawScatter() {
+  const W = 560, H = 360, m = { l: 52, r: 16, t: 14, b: 50 };
+  const pts = DATA.courts.flatMap(c => TIMES.map(t => ({ c: c.name, t, x: c.times[t].coef, y: c.times[t].discoloration, measured: c.times[t].measured })));
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  const x0 = Math.floor(Math.min(...xs) * 10) / 10, x1 = Math.ceil(Math.max(...xs) * 10) / 10;
+  const y1 = Math.ceil(Math.max(...ys));
+  const X = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r);
+  const Y = v => H - m.b - v / y1 * (H - m.t - m.b);
+
+  const meas = pts.filter(p => p.measured);
+  const n = meas.length, mx = meas.reduce((s, p) => s + p.x, 0) / n, my = meas.reduce((s, p) => s + p.y, 0) / n;
+  const sxy = meas.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0), sxx = meas.reduce((s, p) => s + (p.x - mx) ** 2, 0), syy = meas.reduce((s, p) => s + (p.y - my) ** 2, 0);
+  const slope = sxy / sxx, icpt = my - slope * mx, r = sxy / Math.sqrt(sxx * syy);
+
+  let g = "";
+  for (let v = x0; v <= x1 + 1e-9; v += .1) g += `<line x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H - m.b}"/><text x="${X(v)}" y="${H - m.b + 18}" text-anchor="middle">${v.toFixed(1)}</text>`;
+  for (let v = 0; v <= y1; v += 2) g += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${m.l - 10}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`;
+  const tx0 = Math.max(x0, (y1 - icpt) / slope), tx1 = Math.min(x1, (0 - icpt) / slope);
+  const dots = pts.map((p, i) => `<circle class="pt" data-i="${i}" cx="${X(p.x)}" cy="${Y(p.y)}" r="${p.measured ? 7 : 6}"
+     fill="${p.measured ? "var(--cream)" : "transparent"}" stroke="var(--cream)" stroke-width="2" style="transition-delay:${(i * .04).toFixed(2)}s"/>`).join("");
+  document.getElementById("scatter").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Scatter plot of coefficient of friction against discoloration index">
+    <g class="axis grid">${g}</g>
+    <line class="trend" x1="${X(tx0)}" y1="${Y(icpt + slope * tx0)}" x2="${X(tx1)}" y2="${Y(icpt + slope * tx1)}" stroke="#ff8a70" stroke-width="2.5" stroke-linecap="round"/>
+    ${dots}
+    <text class="axis-title" x="${(W + m.l) / 2}" y="${H - 8}" text-anchor="middle">COEFFICIENT OF FRICTION* (more grip →)</text>
+    <text class="axis-title" transform="translate(14 ${(H - m.b) / 2 + 10}) rotate(-90)" text-anchor="middle">DISCOLORATION INDEX** (more dust →)</text></svg>`;
+  document.querySelectorAll("#scatter .pt").forEach(el => {
+    const p = pts[+el.dataset.i];
+    el.addEventListener("pointermove", e => showTip(e, `<b>${p.c}</b> · ${p.t}<br>Friction ${p.x.toFixed(2)} · Dust ${p.y.toFixed(2)}`));
+    el.addEventListener("pointerleave", hideTip);
+  });
+  document.getElementById("scatterInsight").innerHTML =
+    `Every court that left more dust on the cloth also gave the shoe <b>less grip</b>. Across the ${n} courts we measured, the link is very strong (<b>r = ${r.toFixed(2)}</b>, where −1 would be a perfect match).`;
+}
+
+function drawBars() {
+  const rows = DATA.courts.map(c => ({ name: c.name, v: c.times["4 PM"].discoloration })).sort((a, b) => b.v - a.v);
+  const W = 460, rowH = 46, lw = 112, H = rows.length * rowH;
+  const max = Math.ceil(rows[0].v);
+  const bars = rows.map((r, i) => {
+    const w = (W - lw - 48) * r.v / max, col = riskOf(Math.round(r.v / max * 60))[1];
+    return `<g transform="translate(0 ${i * rowH})">
+      <text class="bar-label" x="0" y="${rowH / 2 + 4}">${r.name}</text>
+      <rect x="${lw}" y="${rowH / 2 - 12}" width="${W - lw - 48}" height="24" rx="12" fill="rgba(246,239,230,.08)"/>
+      <rect class="bar" x="${lw}" y="${rowH / 2 - 12}" height="24" rx="12" fill="${col}" data-w="${w}" width="0" style="transition-delay:${(i * .08).toFixed(2)}s"/>
+      <text class="bar-val" x="${lw + w + 8}" y="${rowH / 2 + 5}">${r.v.toFixed(1)}</text></g>`;
+  }).join("");
+  document.getElementById("barchart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bar chart of discoloration index by court">${bars}</svg>`;
+  const hi = rows[0], lo = rows[rows.length - 1];
+  document.getElementById("barInsight").innerHTML =
+    `<b>${hi.name}</b> left the dirtiest cloth, about <b>${(hi.v / lo.v).toFixed(1)}× dustier</b> than ${lo.name}, the cleanest court we tested.`;
+}
+drawScatter(); drawBars();
+const chartIO = new IntersectionObserver(es => es.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add("in");
+  e.target.querySelectorAll(".bar").forEach(b => b.setAttribute("width", b.dataset.w));
+  chartIO.unobserve(e.target);
+}), { threshold: .3 });
+document.querySelectorAll(".chart").forEach(c => chartIO.observe(c));
+
+/* ---------- ingredient checklist ---------- */
+document.querySelectorAll("#recipe li").forEach(li => li.addEventListener("click", () => {
+  li.classList.toggle("done");
+  li.querySelector(".box").textContent = li.classList.contains("done") ? "✓" : "";
+  li.querySelector(".box").style.fontFamily = getComputedStyle(li).fontFamily;
+}));
+
+/* ---------- background fx + floating gear ---------- */
+const COURT_MARKS = [
+  // half basketball court: baseline, sidelines, half-court line, key, free-throw circle, 3-pt line, hoop
+  '<rect x="30" y="30" width="340" height="340" fill="none" stroke="#f6efe6" stroke-width="6"/><rect x="140" y="30" width="120" height="150" fill="none" stroke="#f6efe6" stroke-width="6"/><circle cx="200" cy="180" r="60" fill="none" stroke="#f6efe6" stroke-width="6"/><path d="M60 30 V90 A150 150 0 0 0 340 90 V30" fill="none" stroke="#f6efe6" stroke-width="6"/><circle cx="200" cy="62" r="12" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="176" y1="46" x2="224" y2="46" fill="none" stroke="#f6efe6" stroke-width="6"/><path d="M140 370 A60 60 0 0 1 260 370" fill="none" stroke="#f6efe6" stroke-width="6"/>',
+  // volleyball court: outline, net, attack lines
+  '<rect x="30" y="80" width="340" height="240" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="200" y1="60" x2="200" y2="340" stroke="#f6efe6" stroke-width="10"/><line x1="143" y1="80" x2="143" y2="320" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="257" y1="80" x2="257" y2="320" fill="none" stroke="#f6efe6" stroke-width="6"/>',
+  // badminton court: doubles + singles lines, net, service lines, centre lines
+  '<rect x="30" y="80" width="340" height="240" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="30" y1="98" x2="370" y2="98" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="30" y1="302" x2="370" y2="302" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="200" y1="60" x2="200" y2="340" stroke="#f6efe6" stroke-width="10"/><line x1="160" y1="80" x2="160" y2="320" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="240" y1="80" x2="240" y2="320" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="50" y1="80" x2="50" y2="320" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="350" y1="80" x2="350" y2="320" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="50" y1="200" x2="160" y2="200" fill="none" stroke="#f6efe6" stroke-width="6"/><line x1="240" y1="200" x2="350" y2="200" fill="none" stroke="#f6efe6" stroke-width="6"/>',
+];
+const GEAR = {
+  // [icon, x%, y%, size, rotation, pace (0 = moves with the page, 1 = stays put), hide on phones]
+  hero:     [["basketball", 6, 14, 110, -10, .3], ["racket", 4, 58, 70, -28, .75, 1], ["shuttle", 86, 12, 64, 25, .5], ["soccer", 88, 64, 84, 0, .88], ["pickleball", 20, 84, 42, 0, .6, 1]],
+  explore:  [["pickleball", 0.5, 30, 34, 0, .35, 1], ["paddle", 0.5, 62, 62, -20, .82, 1], ["volleyball", 98.5, 42, 84, 0, .5], ["soccer", 98.5, 82, 74, 0, .7, 1]],
+  findings: [["shuttle", 0.5, 34, 46, -20, .28], ["stopwatch", 0.5, 76, 76, -12, .78, 1], ["racket", 98.5, 30, 70, 30, .55], ["basketball", 98.5, 82, 86, 0, .72, 1]],
+  method:   [["soccer", 0.5, 30, 80, 0, .4], ["stopwatch", 0.5, 80, 70, -10, .86, 1], ["shuttle", 98.5, 50, 52, 15, .62, 1]],
+  credits:  [["basketball", 0.5, 22, 94, 12, .45], ["soccer", 0.5, 70, 60, 0, .66, 1], ["volleyball", 98.5, 20, 80, 0, .7], ["racket", 98.5, 62, 64, 22, .86, 1]],
+};
+const BLOBS = [["#8f1717", 46], ["#6a0d0d", 38], ["#a3341f", 26]];
+const decos = [];
+Object.entries(GEAR).forEach(([id, items], si) => {
+  const sec = id === "hero" ? hero : document.getElementById(id);
+  if (!sec) return;
+  const fx = document.createElement("div"); fx.className = "bg-fx";
+  let html = BLOBS.map(([c, size], k) => `<div class="blob" style="background:${c};width:${size}vw;height:${size}vw;left:${(k * 37 + si * 19) % 80}%;top:${(k * 29 + si * 23) % 70}%;animation-duration:${18 + k * 6}s;animation-delay:${-k * 5}s"></div>`).join("");
+  if (id !== "hero") html += `<svg class="court-mark" viewBox="0 0 400 400" style="width:min(44vw,480px);${si % 2 ? "right" : "left"}:3%;top:${8 + si * 6}%">${COURT_MARKS[si % 3]}</svg>`;
+  for (let k = 0; k < 14; k++) html += `<span class="mote" style="left:${(k * 53 + si * 11) % 100}%;top:${60 + (k * 17) % 45}%;--dx:${(k % 5 - 2) * 30}px;animation-duration:${14 + (k % 6) * 3}s;animation-delay:${-k * 1.7}s"></span>`;
+  fx.innerHTML = html;
+  sec.prepend(fx);
+  if (reduceMotion) return;
+  items.forEach(([icon, x, y, size, rot, speed, smHide]) => {
+    const d = document.createElement("div");
+    d.className = "deco" + (smHide ? " sm-hide" : "");
+    const tall = icon === "racket" || icon === "paddle";
+    d.style.cssText = `left:${x}%;top:${y}%;width:${size}px;margin-left:${x > 50 ? -size : 0}px`;
+    const vb = { racket: "0 0 60 170", paddle: "0 0 70 150", shuttle: "0 0 60 84", pickleball: "0 0 50 50", stopwatch: "0 0 80 96" }[icon] || "0 0 100 100";
+    d.innerHTML = `<span class="float" style="--rot:${rot}deg;--dur:${5 + (size % 5)}s"><svg viewBox="${vb}"><use href="#i-${icon}"/></svg></span>`;
+    sec.appendChild(d);
+    decos.push({ d, sec, speed, spin: tall ? (decos.length % 2 ? 8 : -8) : [70, -45, 30, -90, 55][decos.length % 5] });
+  });
+});
+function fitCourtMarks() {
+  document.querySelectorAll(".court-mark").forEach(m => {
+    const secH = m.closest("section, header").offsetHeight;
+    const w = Math.min(innerWidth * .44, 480, secH * .78);
+    m.style.width = w + "px";
+    m.style.top = ((secH - w) * .45) + "px";
+  });
+}
+fitCourtMarks();
+addEventListener("resize", fitCourtMarks);
+function parallax() {
+  const H = innerHeight;
+  decos.forEach(o => {
+    const r = o.sec.getBoundingClientRect();
+    if (r.bottom < -300 || r.top > H + 300) return;
+    // drift up the screen at (1 - pace) of the scroll speed; the section edge hides anything that slides past it
+    const y = -r.top * o.speed;
+    const spin = r.top / H * o.spin * .5;
+    o.d.style.transform = `translateY(${y.toFixed(1)}px) rotate(${spin.toFixed(1)}deg)`;
+  });
+}
+addEventListener("scroll", parallax, { passive: true });
+parallax();
+
+/* ---------- go ---------- */
+update();
+onScroll();
+addEventListener("load", () => { syncSeg(timeSeg, time); syncSeg(whoSeg, who); });
+addEventListener("resize", () => { syncSeg(timeSeg, time); syncSeg(whoSeg, who); });
+document.fonts && document.fonts.ready.then(() => { syncSeg(timeSeg, time); syncSeg(whoSeg, who); });
+</script>
+</body>
+</html>
