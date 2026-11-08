@@ -97,7 +97,7 @@ def font_b64(name):
 data = load_courts()
 measured = [t["dustiness"] for c in data["courts"] for t in c["times"].values() if t["measured"]]
 
-html = (Path(__file__).parent / "site.html").read_text()
+html = (Path(__file__).parent / "site.html").read_text(encoding="utf-8")
 for key, value in {
     "__DATA__": json.dumps(data),
     "__IMAGES__": json.dumps(load_team_images()),

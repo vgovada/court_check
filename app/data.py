@@ -27,7 +27,7 @@ def dust_level(dustiness):
 
 
 def load_courts(path=DATA_DIR / "court_data.csv"):
-    rows = list(csv.reader(open(path, newline="")))
+    rows = list(csv.reader(open(path, newline="", encoding="utf-8")))
     clean_friction, shoe_weight = 3.25, 3.0
     for row in rows:
         if row and row[0].strip() == "Friction Clean":
