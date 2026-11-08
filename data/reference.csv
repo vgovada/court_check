@@ -1,0 +1,4 @@
+measurement,value,unit,notes
+shoe_plus_weight,3.0,lb,total weight of loaded shoe
+clean_friction,3.25,lb,pull force on clean surface
+clean_friction_coef,1.083,,clean_friction / shoe_plus_weight
