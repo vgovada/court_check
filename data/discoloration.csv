@@ -1,0 +1,7 @@
+photo_file,mean_lightness,discoloration_index,dust_pixel_pct
+badminton_cloth.jpg,84.4,3.52,18.28
+basketball_cloth_A.jpg,81.18,6.73,25.53
+basketball_court_B.jpg,82.77,5.14,24.26
+pickleball_cloth.jpg,80.69,7.22,32.07
+soccer_cloth.jpg,85.2,2.72,15.59
+volleyball_cloth.jpg,83.44,4.47,21.7
